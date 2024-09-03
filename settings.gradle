@@ -1,1 +1,10 @@
 rootProject.name = 'flowofessence'
+
+include('game-server')
+include('matchmaking-server')
+include('authentication-management-server')
+include('chat-server')
+include('database-server')
+include('api-gateway-server')
+include('logging-monitoring-server')
+include('content-delivery-server')
