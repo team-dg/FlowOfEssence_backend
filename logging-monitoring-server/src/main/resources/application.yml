@@ -1,0 +1,32 @@
+server:
+    port: 6006
+
+spring:
+    application:
+        name: logging-monitoring-server
+
+management:
+    server:
+        port: 6010
+    info:
+        java:
+            enabled: true
+        os:
+            enabled: true
+        env:
+            enabled: true
+    endpoints:
+        enabled-by-default: false
+        web:
+            exposure:
+                include: info, health, prometheus
+        jmx:
+            exposure:
+                exclude: '*'
+    endpoint:
+        info:
+            enabled: true
+        health:
+            enabled: true
+        prometheus:
+            enabled: true
