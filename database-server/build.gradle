@@ -1,5 +1,28 @@
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    //common-module
+    implementation project(':common-module')
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    // JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// PostgreSQL
+    implementation 'org.postgresql:postgresql'
+    //Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //Security
+    implementation "org.springframework.security:spring-security-crypto"
+
+    //QueryDSL
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+}
+
+clean {
+	delete file('src/main/generated')
+}
+
+test {
+    enabled = false
 }

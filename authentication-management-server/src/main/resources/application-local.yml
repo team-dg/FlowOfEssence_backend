@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${local-db.postgres.host}:${local-db.postgres.port}/${local-db.postgres.name}
+    username: ${local-db.postgres.username}
+    password: ${local-db.postgres.password}
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        hbm2ddl.auto: create
+        default_batch_fetch_size: 100
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    show-sql: true
+  
+  data:
+    redis:
+      host: ${local-redis.host}
+      port: ${local-redis.port}
+
+api:
+  uri: http://localhost:6001
+
+logging:
+  level:
+    org:
+      hibernate:
+        type: info
+        level: info

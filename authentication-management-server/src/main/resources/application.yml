@@ -1,0 +1,23 @@
+server:
+    port: 6001
+
+spring:
+    profiles:
+        default: local
+    
+    application:
+        name: authentication-management-server
+    
+    config:
+        import:
+            - security/application-db.yml
+            - security/application-oauth2.yml
+    
+    servlet:
+        multipart:
+            max-file-size: 5MB
+            max-request-size: 5MB
+
+#JWT Secret Key 설정
+secret:
+    key: ${jwt.secret.key}

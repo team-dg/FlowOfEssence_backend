@@ -1,4 +1,6 @@
 dependencies {
+	//common-module
+    implementation project(':common-module')
 	//Prometheus
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 	//Actuator
