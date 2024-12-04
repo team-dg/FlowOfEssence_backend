@@ -16,6 +16,12 @@ spring:
     open-in-view: false
     show-sql: true
 
+  data:
+    redis:
+      host: ${local-redis.host}
+      port: ${local-redis.port}
+      password: ${local-redis.password}
+
 api:
   uri: http://localhost:6002
 
