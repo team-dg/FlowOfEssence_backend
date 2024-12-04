@@ -2,57 +2,83 @@ server:
   port: 6000
 
 spring:
+  main:
+    web-application-type: reactive
   application:
     name: api-gateway-server
   profiles:
     default: local
   cloud:
-    compatibility-verifier:
+    kubernetes:
       enabled: false
+      discovery:
+        enabled: false
+      config:
+        enabled: false
     gateway:
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
       routes:
       - id: authentication-server
         uri: lb://authentication-service
         predicates:
           - Path=/auth/**
         filters:
+          - RemoveRequestHeader=Cookie
           - RewritePath=/auth/(?<segment>.*), /api/v1/auth/${segment}
+          - JwtAuthenticationFilter
       - id: chat-server
         uri: lb://chat-service
         predicates:
           - Path=/chat/**
         filters:
+          - RemoveRequestHeader=Cookie
           - RewritePath=/chat/(?<segment>.*), /api/v1/chat/${segment}
+          - JwtAuthenticationFilter
       - id: cdn-server
         uri: lb://cdn-service
         predicates:
           - Path=/cdn/**
         filters:
+          - RemoveRequestHeader=Cookie
           - RewritePath=/cdn/(?<segment>.*), /api/v1/cdn/${segment}
+          - JwtAuthenticationFilter
       - id: game-server
         uri: lb://game-service
         predicates:
           - Path=/game/**
         filters:
+          - RemoveRequestHeader=Cookie
           - RewritePath=/game/(?<segment>.*), /api/v1/game/${segment}
+          - JwtAuthenticationFilter
       - id: api-service-server
         uri: lb://api-service
         predicates:
           - Path=/api/**
         filters:
+          - RemoveRequestHeader=Cookie
           - RewritePath=/api/(?<segment>.*), /api/v1/api/${segment}
+          - JwtAuthenticationFilter
       - id: logging-server
         uri: lb://logging-service
         predicates:
           - Path=/logging/**
         filters:
+          - RemoveRequestHeader=Cookie
           - RewritePath=/logging/(?<segment>.*), /api/v1/logging/${segment}
+          - JwtAuthenticationFilter
       - id: matching-server
         uri: lb://matching-service
         predicates:
           - Path=/matching/**
         filters:
+          - RemoveRequestHeader=Cookie
           - RewritePath=/matching/(?<segment>.*), /api/v1/matching/${segment}
+          - JwtAuthenticationFilter
   servlet:
     multipart:
       max-file-size: 5MB
