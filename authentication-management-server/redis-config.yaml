@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: auth-server
+data:
+  REDIS_HOST: "host.docker.internal"
+  REDIS_PORT: "6379"

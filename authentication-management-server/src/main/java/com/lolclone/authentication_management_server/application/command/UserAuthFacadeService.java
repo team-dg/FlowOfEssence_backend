@@ -2,17 +2,17 @@ package com.lolclone.authentication_management_server.application.command;
 
 import java.util.UUID;
 
+import com.lolclone.authentication_management_server.domain.entity.SocialType;
+import com.lolclone.authentication_management_server.domain.entity.UserInfo;
 import com.lolclone.authentication_management_server.dto.*;
 import com.lolclone.authentication_management_server.infrastructure.MemberAuthenticationTokenProvider;
+import com.lolclone.commonmodule.apigatewayserver.domain.MemberAuthentication;
 import org.springframework.stereotype.Service;
 
 import com.lolclone.authentication_management_server.application.OAuth2Client;
 import com.lolclone.authentication_management_server.application.OAuth2Clients;
 import com.lolclone.authentication_management_server.domain.OpenIdClient;
 import com.lolclone.authentication_management_server.domain.OpenIdClients;
-import com.lolclone.common_module.authenticationserver.domain.authentication.MemberAuthentication;
-import com.lolclone.database_server.authenticationserver.domain.SocialType;
-import com.lolclone.database_server.authenticationserver.domain.UserInfo;
 
 import lombok.RequiredArgsConstructor;
 

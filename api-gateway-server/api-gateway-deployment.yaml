@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-server
+  namespace: api-gateway-server
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: api-gateway-server
+  template:
+    metadata:
+      labels:
+        app: api-gateway-server
+    spec:
+      serviceAccountName: spring-cloud-kubernetes
+      containers:
+        - name: api-gateway-server
+          image: api-gateway-server
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6000
+          env:
+            - name: authentication-service
+              value: http://authentication-service.auth-server:6001
+            # - name: chat-service
+            #   value: http://chat-service.chat-server:6002
+            # - name: cdn-service
+            #   value: http://cdn-service.cdn-server:6003
+            # - name: game-service
+            #   value: http://game-service.game-server:6004
+            # - name: api-service
+            #   value: http://api-service.service-server:6005
+            # - name: matching-service
+            #   value: http://matching-service.matching-server:6006
+            # - name: logging-service
+            #   value: http://logging-service.logging-server:6007
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","sleep 10"]
+          readinessProbe:
+            httpGet:
+              path: /healthcheck/ready
+              port: 6000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthcheck/live
+              port: 6000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3

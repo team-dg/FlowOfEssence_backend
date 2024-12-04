@@ -2,10 +2,8 @@ package com.lolclone.authentication_management_server.infrastructure.openid;
 
 import com.lolclone.authentication_management_server.domain.OpenIdClient;
 import com.lolclone.authentication_management_server.domain.OpenIdNonceValidator;
-import com.lolclone.common_module.commonexception.UnauthorizedException;
-import com.lolclone.common_module.exception.domain.ExceptionType;
-import com.lolclone.database_server.authenticationserver.domain.SocialType;
-import com.lolclone.database_server.authenticationserver.domain.UserInfo;
+import com.lolclone.authentication_management_server.domain.entity.SocialType;
+import com.lolclone.authentication_management_server.domain.entity.UserInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;

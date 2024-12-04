@@ -2,7 +2,10 @@ package com.lolclone.authentication_management_server.presentation;
 
 import java.util.UUID;
 
+import com.lolclone.authentication_management_server.domain.entity.SocialType;
 import com.lolclone.authentication_management_server.dto.*;
+import com.lolclone.commonmodule.apigatewayserver.annotation.UserAuth;
+import com.lolclone.commonmodule.apigatewayserver.domain.MemberAuthentication;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,10 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lolclone.common_module.authenticationserver.annotation.UserAuth;
 import com.lolclone.authentication_management_server.application.command.UserAuthFacadeService;
-import com.lolclone.common_module.authenticationserver.domain.authentication.MemberAuthentication;
-import com.lolclone.database_server.authenticationserver.domain.SocialType;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class UserAuthController {
         @Valid @RequestBody final SignUpRequest signUpRequest
     ) {
         final LoginResponse loginResponse = userAuthFacadeService.signUp(signUpRequest);
-        return ResponseEntity.ok().body(loginResponse);
+        return ResponseEntity.ok().body(loginResponse); 
     }
 
     @GetMapping("/login/oauth2/{socialType}")

@@ -1,17 +1,14 @@
 package com.lolclone.authentication_management_server.infrastructure.oauth2;
 
-
+import com.lolclone.authentication_management_server.common.commonexception.UnauthorizedException;
+import com.lolclone.authentication_management_server.common.exception.domain.ExceptionType;
 import com.lolclone.authentication_management_server.infrastructure.oauth2.dto.KakaoOAuth2TokenResponse;
-import com.lolclone.common_module.commonexception.UnauthorizedException;
-import com.lolclone.common_module.exception.domain.ExceptionType;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @Component

@@ -1,11 +1,10 @@
 package com.lolclone.authentication_management_server.domain;
 
-import com.lolclone.database_server.authenticationserver.domain.Member;
-import com.lolclone.database_server.authenticationserver.domain.RegistrationType;
+import com.lolclone.authentication_management_server.domain.entity.Member;
+import com.lolclone.authentication_management_server.domain.entity.RegistrationType;
+import com.lolclone.authentication_management_server.domain.entity.UserInfo;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import com.lolclone.database_server.authenticationserver.domain.UserInfo;
 
 import lombok.RequiredArgsConstructor;
 

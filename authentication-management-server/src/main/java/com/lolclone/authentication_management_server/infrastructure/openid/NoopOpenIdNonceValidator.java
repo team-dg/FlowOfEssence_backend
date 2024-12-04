@@ -1,15 +1,10 @@
 package com.lolclone.authentication_management_server.infrastructure.openid;
 
 import java.util.Date;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.stereotype.Component;
 
 import com.lolclone.authentication_management_server.domain.OpenIdNonceValidator;
-import com.lolclone.common_module.commonexception.ValidException;
-import com.lolclone.common_module.exception.domain.ExceptionType;
-import com.lolclone.common_module.util.Validator;
 
 /**
  * 1. nonce의 유효성을 검사함

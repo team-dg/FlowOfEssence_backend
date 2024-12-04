@@ -1,0 +1,85 @@
+version: '3.7'
+services:
+  logstash:
+    image: logstash:7.17.24
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash-config.conf:/usr/share/logstash/pipeline/logstash-config.conf
+      - ./logstash/pipeline/:/usr/share/logstash/pipeline/
+    ports:
+      - "5044:5044"  # Beats input
+      - "9600:9600"  # Monitoring
+    networks:
+      - backend
+    depends_on:
+      - elasticsearch
+  
+  filebeat:
+    image: filebeat-custom
+    container_name: filebeat
+    volumes:
+      - /var/log:/var/log:ro
+    networks:
+      - backend
+    depends_on:
+      - logstash
+  
+  kibana:
+    image: kibana:7.17.24
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - backend
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: bitnami/elasticsearch:latest
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/bitnami/elasticsearch
+    networks:
+      - backend
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus-logging-system
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/config:/etc/prometheus
+      - ./prometheus/volume:/prometheus
+    command:
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-logging-system
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - backend
+    depends_on:
+      - prometheus
+  
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  elasticsearch-data:
+  grafana-data:

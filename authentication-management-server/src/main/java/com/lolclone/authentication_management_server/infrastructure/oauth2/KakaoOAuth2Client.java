@@ -1,9 +1,9 @@
 package com.lolclone.authentication_management_server.infrastructure.oauth2;
 
 import com.lolclone.authentication_management_server.application.OAuth2Client;
+import com.lolclone.authentication_management_server.domain.entity.SocialType;
+import com.lolclone.authentication_management_server.domain.entity.UserInfo;
 import com.lolclone.authentication_management_server.infrastructure.openid.KakaoOpenIdClient;
-import com.lolclone.database_server.authenticationserver.domain.SocialType;
-import com.lolclone.database_server.authenticationserver.domain.UserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

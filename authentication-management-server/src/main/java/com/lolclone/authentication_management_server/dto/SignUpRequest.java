@@ -1,6 +1,6 @@
 package com.lolclone.authentication_management_server.dto;
 
-import com.lolclone.common_module.util.Validator;
+import com.lolclone.authentication_management_server.common.exception.util.Validator;
 
 public record SignUpRequest(
     String username,

@@ -1,0 +1,17 @@
+server:
+    port: 6007
+
+spring:
+    profiles:
+        default: local
+    
+    application:
+        name: matchmaking-server
+    
+    config:
+        import:
+            - security/application-db.yml
+    servlet:
+        multipart:
+            max-file-size: 5MB
+            max-request-size: 5MB
