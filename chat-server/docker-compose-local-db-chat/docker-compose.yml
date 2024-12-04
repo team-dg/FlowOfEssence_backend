@@ -1,0 +1,126 @@
+version: '3.7'
+
+x-common-environment: &common_environment
+  POSTGRESQL_POSTGRES_PASSWORD: ${POSTGRESQL_POSTGRES_PASSWORD}
+  POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+  REPMGR_PASSWORD: ${REPMGR_PASSWORD}
+  REPMGR_PRIMARY_HOST: ${REPMGR_PRIMARY_HOST}
+  REPMGR_PRIMARY_PORT: ${REPMGR_PRIMARY_PORT}
+  REPMGR_PORT_NUMBER: ${REPMGR_PORT_NUMBER}
+
+services:
+  postgres-primary-0:
+    image: bitnami/postgresql-repmgr:15
+    container_name: chat-postgres-primary-0
+    volumes:
+      - postgres_primary_data:/bitnami/postgresql
+    environment:
+      <<: *common_environment
+      REPMGR_PARTNER_NODES: chat-postgres-primary-0,chat-postgres-replica-1,chat-postgres-replica-2
+      REPMGR_NODE_NAME: chat-postgres-primary-0
+      REPMGR_NODE_NETWORK_NAME: chat-postgres-primary-0
+    networks:
+      - postgres-cluster-network
+
+  postgres-replica-1:
+    image: bitnami/postgresql-repmgr:15
+    container_name: chat-postgres-replica-1
+    volumes:
+      - postgres_replica_1_data:/bitnami/postgresql
+    environment:
+      <<: *common_environment
+      REPMGR_PARTNER_NODES: chat-postgres-primary-0,chat-postgres-replica-1,chat-postgres-replica-2
+      REPMGR_NODE_NAME: chat-postgres-replica-1
+      REPMGR_NODE_NETWORK_NAME: chat-postgres-replica-1
+    networks:
+      - postgres-cluster-network
+
+  postgres-replica-2:
+    image: bitnami/postgresql-repmgr:15
+    container_name: chat-postgres-replica-2
+    volumes:
+      - postgres_replica_2_data:/bitnami/postgresql
+    environment:
+      <<: *common_environment
+      REPMGR_PARTNER_NODES: chat-postgres-primary-0,chat-postgres-replica-1,chat-postgres-replica-2
+      REPMGR_NODE_NAME: chat-postgres-replica-2
+      REPMGR_NODE_NETWORK_NAME: chat-postgres-replica-2
+    networks:
+      - postgres-cluster-network
+
+  pgpool:
+    image: bitnami/pgpool:4
+    container_name: chat-pgpool
+    ports:
+      - "${PGPOOL_PORT}:5432"
+    environment:
+      - PGPOOL_BACKEND_NODES=0:chat-postgres-primary-0:5432,1:chat-postgres-replica-1:5432,2:chat-postgres-replica-2:5432
+      - PGPOOL_SR_CHECK_USER=${PGPOOL_SR_CHECK_USER}
+      - PGPOOL_SR_CHECK_PASSWORD=${PGPOOL_SR_CHECK_PASSWORD}
+      - PGPOOL_ENABLE_LDAP=no
+      - PGPOOL_POSTGRES_USERNAME=${PGPOOL_POSTGRES_USERNAME}
+      - PGPOOL_POSTGRES_PASSWORD=${PGPOOL_POSTGRES_PASSWORD}
+      - PGPOOL_ADMIN_USERNAME=${PGPOOL_ADMIN_USERNAME}
+      - PGPOOL_ADMIN_PASSWORD=${PGPOOL_ADMIN_PASSWORD}
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - postgres-cluster-network
+
+  redis_service1:
+    image: redis:7.2.6
+    ports:
+      - "${REDIS_PORT_SERVICE1}:6379"
+    volumes:
+      - ./redis/config/redis-service1.conf:/usr/local/etc/redis/redis.conf
+      - redis-service1-data:/data
+      - redis-service1-nodes:/data/nodes.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      - backend
+
+  redis_service2:
+    image: redis:7.2.6
+    ports:
+      - "${REDIS_PORT_SERVICE2}:6379"
+    volumes:
+      - ./redis/config/redis-service2.conf:/usr/local/etc/redis/redis.conf
+      - redis-service2-data:/data
+      - redis-service2-nodes:/data/nodes.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      - backend
+
+  redis_service3:
+    image: redis:7.2.6
+    ports:
+      - "${REDIS_PORT_SERVICE3}:6379"
+    volumes:
+      - ./redis/config/redis-service3.conf:/usr/local/etc/redis/redis.conf
+      - redis-service3-data:/data
+      - redis-service3-nodes:/data/nodes.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+  postgres-cluster-network:
+    driver: bridge
+
+volumes:
+  postgres_primary_data:
+  postgres_replica_1_data:
+  postgres_replica_2_data:
+  redis-service1-data:
+  redis-service1-nodes:
+  redis-service2-data:
+  redis-service2-nodes:
+  redis-service3-data:
+  redis-service3-nodes:

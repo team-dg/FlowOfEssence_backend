@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   zk1:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:5.5.1
     restart: always
     hostname: zk1
     container_name: zk1
@@ -19,7 +19,7 @@ services:
       - zk1-logs:/var/lib/zookeeper/log
 
   zk2:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:5.5.1
     restart: always
     hostname: zk2
     container_name: zk2
@@ -37,7 +37,7 @@ services:
       - zk2-logs:/var/lib/zookeeper/log
 
   zk3:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:5.5.1
     restart: always
     hostname: zk3
     container_name: zk3
@@ -51,11 +51,11 @@ services:
       - ZOOKEEPER_SYNC_LIMIT=2
       - ZOOKEEPER_SERVERS=zk1:2888:3888;zk2:2888:3888;zk3:2888:3888
     volumes:
-      - zookeeper-3-data:/var/lib/zookeeper/data
-      - zookeeper-3-logs:/var/lib/zookeeper/log
+      - zk3-data:/var/lib/zookeeper/data
+      - zk3-logs:/var/lib/zookeeper/log
   
   kafka1:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:5.5.1
     restart: always
     hostname: kafka1
     container_name: kafka1
@@ -73,16 +73,11 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_JMX_PORT: 9991
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
     volumes:
       - kafka1-data:/var/lib/kafka/data
   
   kafka2:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:5.5.1
     restart: always
     hostname: kafka2
     container_name: kafka2
@@ -100,16 +95,11 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_JMX_PORT: 9992
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
     volumes:
       - kafka2-data:/var/lib/kafka/data
 
   kafka3:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:5.5.1
     restart: always
     hostname: kafka3
     container_name: kafka3
@@ -127,11 +117,6 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_JMX_PORT: 9993
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
     volumes:
       - kafka3-data:/var/lib/kafka/data
   
@@ -140,19 +125,18 @@ services:
     container_name: cmak
     ports:
       - "9000:9000"
-    environment:
-      ZK_HOSTS: "zk1:12181,zk2:22181,zk3:32181"
     env_file:
-      - .env.kafka_manager
+      - .env
     command: -Dpidfile.path=/dev/null
 
 volumes:
-  zookeeper-1-data:
-  zookeeper-1-logs:
-  zookeeper-2-data:
-  zookeeper-2-logs:
-  zookeeper-3-data:
-  zookeeper-3-logs:
-  kafka-1-data:
-  kafka-2-data:
-  kafka-3-data:
+  zk1-data:
+  zk1-logs:
+  zk2-data:
+  zk2-logs:
+  zk3-data:
+  zk3-logs:
+  kafka1-data:
+  kafka2-data:
+  kafka3-data:
+  kafka-manager-data:
