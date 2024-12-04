@@ -1,8 +1,8 @@
 package com.lolclone.authentication_management_server.infrastructure;
 
-import com.lolclone.common_module.authenticationserver.Role;
-import com.lolclone.common_module.authenticationserver.domain.authentication.MemberAuthentication;
 import com.lolclone.authentication_management_server.dto.TokenResponse;
+import com.lolclone.commonmodule.apigatewayserver.domain.MemberAuthentication;
+import com.lolclone.commonmodule.apigatewayserver.domain.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

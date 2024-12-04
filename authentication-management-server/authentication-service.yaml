@@ -14,3 +14,4 @@ spec:
   ports:
     - protocol: TCP
       port: 6001
+  type: ClusterIP

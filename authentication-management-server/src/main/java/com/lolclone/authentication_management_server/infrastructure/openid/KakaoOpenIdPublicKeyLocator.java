@@ -1,7 +1,7 @@
 package com.lolclone.authentication_management_server.infrastructure.openid;
 
-import com.lolclone.common_module.commonexception.UnauthorizedException;
-import com.lolclone.common_module.exception.domain.ExceptionType;
+import com.lolclone.authentication_management_server.common.commonexception.UnauthorizedException;
+import com.lolclone.authentication_management_server.common.exception.domain.ExceptionType;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Locator;
 import lombok.RequiredArgsConstructor;

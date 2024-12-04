@@ -29,5 +29,6 @@ ENV SPRING_PROFILES_ACTIVE=dev
 # 포트 노출
 EXPOSE 6001
 
-# 애플리케이션 실행
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+# 애플리케이션 실행 명령어 설정
+ENTRYPOINT ["java"]
+CMD ["-jar","/app/app.jar"]

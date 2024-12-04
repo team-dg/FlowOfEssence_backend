@@ -1,7 +1,7 @@
 package com.lolclone.authentication_management_server.infrastructure.openid;
 
-import com.lolclone.common_module.commonexception.InternalServerException;
-import com.lolclone.common_module.exception.domain.ExceptionType;
+import com.lolclone.authentication_management_server.common.commonexception.InternalServerException;
+import com.lolclone.authentication_management_server.common.exception.domain.ExceptionType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;

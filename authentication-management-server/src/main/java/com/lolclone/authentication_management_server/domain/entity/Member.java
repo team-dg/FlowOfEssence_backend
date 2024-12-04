@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.Map;
 
-import com.lolclone.common_module.domain.BaseTimeEntity;
-import com.lolclone.common_module.util.Validator;
+import com.lolclone.authentication_management_server.common.domain.BaseTimeEntity;
+import com.lolclone.authentication_management_server.common.exception.util.Validator;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;

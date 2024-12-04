@@ -4,6 +4,8 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.lolclone.authentication_management_server.common.commonexception.UnauthorizedException;
+import com.lolclone.authentication_management_server.common.exception.domain.ExceptionType;
 import com.lolclone.authentication_management_server.domain.entity.JwtRefreshToken;
 import com.lolclone.authentication_management_server.domain.entity.Member;
 import com.lolclone.authentication_management_server.domain.entity.UserInfo;
@@ -20,8 +22,6 @@ import com.lolclone.authentication_management_server.dto.LoginResult;
 import com.lolclone.authentication_management_server.dto.TokenRefreshResult;
 import com.lolclone.authentication_management_server.event.UserCreatedEvent;
 import com.lolclone.authentication_management_server.event.UserDeletedEvent;
-import com.lolclone.common_module.commonexception.UnauthorizedException;
-import com.lolclone.common_module.exception.domain.ExceptionType;
 import com.lolclone.authentication_management_server.domain.UserInfoMapper;
 
 import lombok.RequiredArgsConstructor;

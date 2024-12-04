@@ -2,10 +2,9 @@ package com.lolclone.authentication_management_server.infrastructure;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.lolclone.authentication_management_server.common.commonexception.BadRequestException;
+import com.lolclone.authentication_management_server.common.exception.domain.ExceptionType;
 import com.lolclone.authentication_management_server.domain.DefaultNicknamePolicy;
-import com.lolclone.common_module.exception.domain.ExceptionType;
-
-import com.lolclone.common_module.commonexception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

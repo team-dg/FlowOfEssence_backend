@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.lolclone.common_module.domain.BaseTimeEntity;
+import com.lolclone.authentication_management_server.common.domain.BaseTimeEntity;
 import org.springframework.data.domain.Persistable;
 
 import jakarta.persistence.Entity;
