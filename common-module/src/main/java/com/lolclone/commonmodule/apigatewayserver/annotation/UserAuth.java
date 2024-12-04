@@ -1,11 +1,11 @@
-package com.lolclone.common_module.authenticationserver.annotation;
+package com.lolclone.commonmodule.apigatewayserver.annotation;
+
+import com.lolclone.commonmodule.apigatewayserver.domain.Role;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import com.lolclone.common_module.authenticationserver.Role;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

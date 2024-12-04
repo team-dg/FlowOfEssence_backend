@@ -1,9 +1,6 @@
-package com.lolclone.common_module.authenticationserver.domain.authentication;
-
-import com.lolclone.common_module.authenticationserver.Role;
+package com.lolclone.commonmodule.apigatewayserver.domain;
 
 public class AnonymousAuthentication implements Authentication {
-
     private static final AnonymousAuthentication INSTANCE = new AnonymousAuthentication();
 
     private AnonymousAuthentication() {

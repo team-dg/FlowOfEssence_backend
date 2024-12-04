@@ -1,4 +1,4 @@
-package com.lolclone.common_module.authenticationserver.annotation;
+package com.lolclone.commonmodule.apigatewayserver.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Member {
-
+    
 }
