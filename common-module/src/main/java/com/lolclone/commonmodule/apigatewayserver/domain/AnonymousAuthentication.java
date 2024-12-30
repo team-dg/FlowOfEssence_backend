@@ -1,5 +1,7 @@
 package com.lolclone.commonmodule.apigatewayserver.domain;
 
+import java.util.UUID;
+
 public class AnonymousAuthentication implements Authentication {
     private static final AnonymousAuthentication INSTANCE = new AnonymousAuthentication();
 
@@ -11,7 +13,7 @@ public class AnonymousAuthentication implements Authentication {
     }
 
     @Override
-    public Long getId() {
+    public UUID getId() {
         return null;
     }
 
