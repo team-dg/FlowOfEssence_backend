@@ -1,12 +1,6 @@
 dependencies {
-	//common-module
-    implementation project(':common-module')
-	//Prometheus
-	implementation 'io.micrometer:micrometer-registry-prometheus'
-	//Actuator
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	// Micrometer
-    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    // Common-Module
+	api project(':common-module')
     //QueryDSL
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
