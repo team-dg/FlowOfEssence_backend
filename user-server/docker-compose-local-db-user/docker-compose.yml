@@ -1,0 +1,76 @@
+version: '3.7'
+
+x-common-environment: &common_environment
+  POSTGRESQL_POSTGRES_PASSWORD: ${POSTGRESQL_POSTGRES_PASSWORD}
+  POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+  REPMGR_PASSWORD: ${REPMGR_PASSWORD}
+  REPMGR_PRIMARY_HOST: ${REPMGR_PRIMARY_HOST}
+  REPMGR_PRIMARY_PORT: ${REPMGR_PRIMARY_PORT}
+  REPMGR_PORT_NUMBER: ${REPMGR_PORT_NUMBER}
+
+services:
+  postgres-primary-0:
+    image: bitnami/postgresql-repmgr:15
+    container_name: user-postgres-primary-0
+    volumes:
+      - user_postgres_primary_data:/bitnami/postgresql
+    environment:
+      <<: *common_environment
+      REPMGR_PARTNER_NODES: user-postgres-primary-0,user-postgres-replica-1,user-postgres-replica-2
+      REPMGR_NODE_NAME: user-postgres-primary-0
+      REPMGR_NODE_NETWORK_NAME: user-postgres-primary-0
+
+  postgres-replica-1:
+    image: bitnami/postgresql-repmgr:15
+    container_name: user-postgres-replica-1
+    volumes:
+      - user_postgres_replica_1_data:/bitnami/postgresql
+    environment:
+      <<: *common_environment
+      REPMGR_PARTNER_NODES: user-postgres-primary-0,user-postgres-replica-1,user-postgres-replica-2
+      REPMGR_NODE_NAME: user-postgres-replica-1
+      REPMGR_NODE_NETWORK_NAME: user-postgres-replica-1
+
+  postgres-replica-2:
+    image: bitnami/postgresql-repmgr:15
+    container_name: user-postgres-replica-2
+    volumes:
+      - user_postgres_replica_2_data:/bitnami/postgresql
+    environment:
+      <<: *common_environment
+      REPMGR_PARTNER_NODES: user-postgres-primary-0,user-postgres-replica-1,user-postgres-replica-2
+      REPMGR_NODE_NAME: user-postgres-replica-2
+      REPMGR_NODE_NETWORK_NAME: user-postgres-replica-2
+  
+  pgpool:
+    image: bitnami/pgpool:4
+    container_name: user-pgpool
+    ports:
+      - "${PGPOOL_PORT}:5432"
+    environment:
+      - PGPOOL_BACKEND_NODES=0:user-postgres-primary-0:5432,1:user-postgres-replica-1:5432,2:user-postgres-replica-2:5432
+      - PGPOOL_SR_CHECK_USER=${PGPOOL_SR_CHECK_USER}
+      - PGPOOL_SR_CHECK_PASSWORD=${PGPOOL_SR_CHECK_PASSWORD}
+      - PGPOOL_ENABLE_LDAP=no
+      - PGPOOL_POSTGRES_USERNAME=${PGPOOL_POSTGRES_USERNAME}
+      - PGPOOL_POSTGRES_PASSWORD=${PGPOOL_POSTGRES_PASSWORD}
+      - PGPOOL_ADMIN_USERNAME=${PGPOOL_ADMIN_USERNAME}
+      - PGPOOL_ADMIN_PASSWORD=${PGPOOL_ADMIN_PASSWORD}
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+networks:
+  backend:
+    driver: bridge
+  postgres-cluster-network:
+    driver: bridge
+
+volumes:
+  user_postgres_primary_data:
+  user_postgres_replica_1_data:
+  user_postgres_replica_2_data:

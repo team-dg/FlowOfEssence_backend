@@ -1,0 +1,21 @@
+server:
+    port: 6011
+
+spring:
+    main:
+        web-application-type: servlet
+    
+    profiles:
+        default: local
+    
+    application:
+        name: user-server
+    
+    config:
+        import:
+            - security/application-db.yml
+    
+    servlet:
+        multipart:
+            max-file-size: 5MB
+            max-request-size: 5MB
