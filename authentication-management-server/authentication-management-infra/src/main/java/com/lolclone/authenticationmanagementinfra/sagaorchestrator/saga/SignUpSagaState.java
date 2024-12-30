@@ -1,0 +1,57 @@
+package com.lolclone.authenticationmanagementinfra.sagaorchestrator.saga;
+
+import java.util.UUID;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.lolclone.authenticationmanagementserviceapi.command.CreateSignUpUserCommand;
+import com.lolclone.authenticationmanagementserviceapi.command.UndoCreateSignUpUserCommand;
+import com.lolclone.userserviceapi.command.CreateUserCommand;
+import com.lolclone.userserviceapi.command.UndoCreateUserCommand;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+public class SignUpSagaState {
+    private UUID userId;
+    private String nickname;
+    private UUID refreshTokenId;
+
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public CreateUserCommand makeCreateUserCommand() {
+        return new CreateUserCommand(getUserId(), getNickname());
+    }
+
+    public UndoCreateUserCommand makeUndoCreateUserCommand() {
+        return new UndoCreateUserCommand(getUserId());
+    }
+
+    public CreateSignUpUserCommand makeCreateSignUpUserCommand() {
+        return new CreateSignUpUserCommand(getUserId(), getNickname());
+    }
+
+    public UndoCreateSignUpUserCommand makeUndoCreateSignUpUserCommand() {
+        return new UndoCreateSignUpUserCommand(getUserId(), getRefreshTokenId());
+    }
+}
