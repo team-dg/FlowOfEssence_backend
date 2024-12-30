@@ -1,0 +1,138 @@
+version: '3.7'
+
+services:
+  # User Server Database
+  user-postgres:
+    image: eventuateio/eventuate-tram-sagas-postgres:${EVENTUATE_COMMON_VERSION}
+    container_name: user-postgres
+    environment:
+      POSTGRES_USER: donghyeon
+      POSTGRES_PASSWORD: adzc1973
+      POSTGRES_DB: user_server
+      USE_DB_ID: "true"
+    command: 
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+    ports:
+      - "5432:5432"
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+    networks:
+      - eventuate-network
+
+  # Authentication Server Database
+  auth-postgres:
+    image: eventuateio/eventuate-tram-sagas-postgres:${EVENTUATE_COMMON_VERSION}
+    container_name: auth-postgres
+    environment:
+      POSTGRES_USER: donghyeon
+      POSTGRES_PASSWORD: adzc1973
+      POSTGRES_DB: eventuate
+      USE_DB_ID: "true"
+    command: 
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+    ports:
+      - "5434:5432"
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    networks:
+      - eventuate-network
+
+  # Single Zookeeper Instance
+  zookeeper:
+    image: eventuateio/eventuate-zookeeper:${EVENTUATE_COMMON_VERSION}
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - eventuate-network
+
+  # Single Kafka Instance
+  kafka:
+    image: eventuateio/eventuate-kafka:${EVENTUATE_MESSAGING_KAFKA_IMAGE_VERSION?}
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 60000
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_BROKER_ID: 1
+    networks:
+      - eventuate-network
+
+  
+  eventuate-cdc-service:
+    image: eventuateio/eventuate-cdc-service:${EVENTUATE_CDC_VERSION}
+    ports:
+      - "8099:8080"
+    depends_on:
+      - auth-postgres
+      - kafka
+      - zookeeper
+    environment:
+      EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING: zookeeper:2181
+
+      EVENTUATE_CDC_READER_READER1_TYPE: postgres-wal
+      EVENTUATE_CDC_READER_READER1_DATASOURCEURL: jdbc:postgresql://auth-postgres:5432/eventuate
+      EVENTUATE_CDC_READER_READER1_MONITORINGSCHEMA: eventuate
+      EVENTUATE_CDC_READER_READER1_DATASOURCEUSERNAME: donghyeon
+      EVENTUATE_CDC_READER_READER1_DATASOURCEPASSWORD: adzc1973
+      EVENTUATE_CDC_READER_READER1_DATASOURCEDRIVERCLASSNAME: org.postgresql.Driver
+      EVENTUATE_CDC_READER_READER1_LEADERSHIPLOCKPATH: /eventuate/cdc/leader/authentication_service
+      EVENTUATE_CDC_READER_READER1_OFFSETSTORAGETOPICNAME: db.history.authentication_service
+      EVENTUATE_CDC_READER_READER1_OUTBOXID: 1
+
+      EVENTUATE_CDC_READER_READER2_TYPE: postgres-wal
+      EVENTUATE_CDC_READER_READER2_DATASOURCEURL: jdbc:postgresql://user-postgres:5432/user_server
+      EVENTUATE_CDC_READER_READER2_MONITORINGSCHEMA: eventuate
+      EVENTUATE_CDC_READER_READER2_DATASOURCEUSERNAME: donghyeon
+      EVENTUATE_CDC_READER_READER2_DATASOURCEPASSWORD: adzc1973
+      EVENTUATE_CDC_READER_READER2_DATASOURCEDRIVERCLASSNAME: org.postgresql.Driver
+      EVENTUATE_CDC_READER_READER2_LEADERSHIPLOCKPATH: /eventuate/cdc/leader/user_service
+      EVENTUATE_CDC_READER_READER2_OFFSETSTORAGETOPICNAME: db.history.user_service
+      EVENTUATE_CDC_READER_READER2_OUTBOXID: 2
+
+      EVENTUATE_CDC_PIPELINE_PIPELINE1_TYPE: eventuate-tram
+      EVENTUATE_CDC_PIPELINE_PIPELINE1_READER: reader1
+      EVENTUATE_CDC_PIPELINE_PIPELINE1_EVENTUATEDATABASESCHEMA: eventuate
+
+      EVENTUATE_CDC_PIPELINE_PIPELINE2_TYPE: eventuate-tram
+      EVENTUATE_CDC_PIPELINE_PIPELINE2_READER: reader2
+      EVENTUATE_CDC_PIPELINE_PIPELINE2_EVENTUATEDATABASESCHEMA: eventuate
+
+      EVENTUATE_CDC_POSTGRES_REPLICATION_SLOT_NAME: eventuate_slot
+      EVENTUATE_CDC_POSTGRES_REPLICATION_SLOT_DROP_ON_STOP: "false"
+      EVENTUATE_CDC_POSTGRES_REPLICATION_SLOT_CREATE: "true"
+      EVENTUATE_CDC_POSTGRES_REPLICATION_SLOT_INITIAL_CREATE: "true"
+      
+      EVENTUATE_CDC_TYPE: EventuateTram
+      LOGGING_LEVEL_IO_EVENTUATE: DEBUG
+      LOGGING_LEVEL_IO_EVENTUATE_CDC: DEBUG
+    networks:
+      - eventuate-network
+
+volumes:
+  user_postgres_data:
+  auth_postgres_data:
+  cdc_postgres_data:
+
+networks:
+  eventuate-network:
+    driver: bridge
