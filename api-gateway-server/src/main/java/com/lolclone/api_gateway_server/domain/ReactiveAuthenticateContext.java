@@ -3,6 +3,9 @@ package com.lolclone.api_gateway_server.domain;
 import com.lolclone.commonmodule.apigatewayserver.domain.AnonymousAuthentication;
 import com.lolclone.commonmodule.apigatewayserver.domain.Authentication;
 import com.lolclone.commonmodule.apigatewayserver.domain.Role;
+
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -22,7 +25,7 @@ public class ReactiveAuthenticateContext {
                 .defaultIfEmpty(AnonymousAuthentication.getInstance());
     }
 
-    public Mono<Long> getId(ServerWebExchange exchange) {
+    public Mono<UUID> getId(ServerWebExchange exchange) {
         return getAuthentication(exchange)
                 .map(Authentication::getId);
     }

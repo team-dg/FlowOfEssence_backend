@@ -4,6 +4,9 @@ import com.lolclone.commonmodule.apigatewayserver.domain.AnonymousAuthentication
 import com.lolclone.commonmodule.apigatewayserver.domain.Authentication;
 import com.lolclone.commonmodule.apigatewayserver.domain.MemberAuthentication;
 import com.lolclone.commonmodule.apigatewayserver.domain.Role;
+
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
 
@@ -19,7 +22,7 @@ public class MemberAuthenticationClaimsExtractor implements AuthenticationClaims
         if (!claims.getAudience().contains(Role.MEMBER.name())) {
             return Mono.just(AnonymousAuthentication.getInstance());
         }
-        Long memberId = claims.get(MEMBER_ID_KEY, Long.class);
+        UUID memberId = claims.get(MEMBER_ID_KEY, UUID.class);
         return Mono.just(new MemberAuthentication(memberId));
     }
 }
