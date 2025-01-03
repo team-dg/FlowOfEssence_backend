@@ -3,9 +3,10 @@ package com.lolclone.chat_server.dto.response;
 import com.lolclone.chat_server.domain.FriendRequest;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record FriendRequestResponseDto(
-    Long requesterId,
+    UUID requesterId,
     String requesterNickname,
     LocalDateTime requestDate
 ) {

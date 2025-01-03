@@ -8,7 +8,7 @@ import com.lolclone.userinfra.saga.publisher.UserDomainEventPublisher;
 import io.eventuate.tram.events.publisher.DomainEventPublisher;
 
 @Configuration
-public class UserConfiguration {
+public class UserProducerConfiguration {
     @Bean
     public UserDomainEventPublisher userDomainAggregateEventPublisher(DomainEventPublisher eventPublisher) {
         return new UserDomainEventPublisher(eventPublisher);

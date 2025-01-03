@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 import com.lolclone.chat_server.common.domain.BaseTimeEntity;
 
 @Entity
@@ -20,7 +22,7 @@ import com.lolclone.chat_server.common.domain.BaseTimeEntity;
 )
 public class User extends BaseTimeEntity {
     @Id
-    private Long id; // authentication-server에서 생성된 ID를 그대로 사용
+    private UUID id; // authentication-server에서 생성된 ID를 그대로 사용
     
     @Column(nullable = false, length = 30)
     private String nickname;
@@ -35,13 +37,13 @@ public class User extends BaseTimeEntity {
     @Column(length = 100)
     private String gameInfo;
     
-    private User(Long id, String nickname, String tag) {
+    private User(UUID id, String nickname, String tag) {
         this.id = id;
         this.nickname = nickname;
         this.tag = tag;
     }
     
-    public static User of(Long id, String nickname, String tag) {
+    public static User of(UUID id, String nickname, String tag) {
         return new User(id, nickname, tag);
     }
     

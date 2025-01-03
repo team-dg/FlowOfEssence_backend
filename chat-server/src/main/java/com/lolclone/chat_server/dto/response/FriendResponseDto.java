@@ -1,12 +1,13 @@
 package com.lolclone.chat_server.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.lolclone.chat_server.domain.Friend;
 import com.lolclone.chat_server.domain.User;
 
 public record FriendResponseDto(
-    Long friendId,
+    UUID friendId,
     String friendName,
     String tag,
     String status,

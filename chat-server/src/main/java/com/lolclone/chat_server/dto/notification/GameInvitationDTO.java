@@ -1,14 +1,15 @@
 package com.lolclone.chat_server.dto.notification;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record GameInvitationDTO(
-    Long senderId,
-    Long roomId,
+    UUID senderId,
+    UUID roomId,
     String message,
     LocalDateTime timestamp
 ) {
-    public static GameInvitationDTO of(Long senderId, Long roomId, String message) {
+    public static GameInvitationDTO of(UUID senderId, UUID roomId, String message) {
         return new GameInvitationDTO(
             senderId,
             roomId,

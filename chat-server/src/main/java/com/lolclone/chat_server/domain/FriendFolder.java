@@ -10,16 +10,23 @@ import com.lolclone.chat_server.exception.domain.ExceptionType;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
+
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "friend_folders")
 public class FriendFolder extends BaseTimeEntity {
-    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+        name = "UUID",
+        strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "friend_folder_id", columnDefinition = "uuid")
+    private UUID id;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -44,7 +51,7 @@ public class FriendFolder extends BaseTimeEntity {
         this.name = name;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return user.getId();
     }
     
@@ -58,7 +65,7 @@ public class FriendFolder extends BaseTimeEntity {
             folderFriend.getFriend().getId().equals(friend.getId()));
     }
     
-    public void updateFriendOrder(Long friendId, int newOrder) {
+    public void updateFriendOrder(UUID friendId, int newOrder) {
         FolderFriend targetFriend = this.friends.stream()
             .filter(ff -> ff.getFriend().getId().equals(friendId))
             .findFirst()

@@ -5,6 +5,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import com.lolclone.chat_server.common.domain.BaseTimeEntity;
 
 @Entity
@@ -23,16 +27,20 @@ import com.lolclone.chat_server.common.domain.BaseTimeEntity;
     }
 )
 public class FriendRequest extends BaseTimeEntity {
-    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+        name = "UUID",
+        strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "friend_request_id", columnDefinition = "uuid")
+    private UUID id;
     
     @Column(name = "sender_id", nullable = false)
-    private Long senderId;
+    private UUID senderId;
     
     @Column(name = "receiver_id", nullable = false)
-    private Long receiverId;
+    private UUID receiverId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", insertable = false, updatable = false)
@@ -42,12 +50,12 @@ public class FriendRequest extends BaseTimeEntity {
     @JoinColumn(name = "receiver_id", insertable = false, updatable = false)
     private User receiver;
 
-    private FriendRequest(Long senderId, Long receiverId) {
+    private FriendRequest(UUID senderId, UUID receiverId) {
         this.senderId = senderId;
         this.receiverId = receiverId;
     }
 
-    public static FriendRequest of(Long senderId, Long receiverId) {
+    public static FriendRequest of(UUID senderId, UUID receiverId) {
         return new FriendRequest(senderId, receiverId);
     }
 } 

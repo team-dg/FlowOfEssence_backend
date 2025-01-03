@@ -1,9 +1,12 @@
 package com.lolclone.chat_server.handler;
 
+import java.util.UUID;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.lolclone.chat_server.domain.Message;
 import com.lolclone.chat_server.dto.notification.NotificationMessage;
@@ -13,6 +16,7 @@ import com.lolclone.chat_server.exception.domain.ExceptionType;
 import com.lolclone.chat_server.dto.notification.GameInvitationDTO;
 import com.lolclone.chat_server.dto.event.UserStatusEvent;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MessageHandler {
@@ -20,7 +24,7 @@ public class MessageHandler {
     private final SimpMessagingTemplate messagingTemplate;
     
     public void sendMessageToUser(Message message) {
-        try {
+        try { 
             messagingTemplate.convertAndSendToUser(
                 message.getReceiverId().toString(),
                 "/queue/messages",
@@ -31,7 +35,7 @@ public class MessageHandler {
         }
     }
     
-    public void sendNotificationToUser(Long receiverId, NotificationMessage notification) {
+    public void sendNotificationToUser(UUID receiverId, NotificationMessage notification) {
         try {
             messagingTemplate.convertAndSendToUser(
                 receiverId.toString(),
@@ -43,7 +47,7 @@ public class MessageHandler {
         }
     }
     
-    public void sendGameInvitation(Long receiverId, GameInvitationDTO invitation) {
+    public void sendGameInvitation(UUID receiverId, GameInvitationDTO invitation) {
         try {
             messagingTemplate.convertAndSendToUser(
                 receiverId.toString(),

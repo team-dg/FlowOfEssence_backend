@@ -10,6 +10,7 @@ import com.lolclone.chat_server.service.FriendFolderService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,8 @@ public class FriendFolderController {
     private final FriendFolderService folderService;
     
     @PostMapping
-    public ResponseEntity<Long> createFolder(@Valid @RequestBody final FolderCreateRequest request) {
-        final Long folderId = folderService.createFolder(request);
+    public ResponseEntity<UUID> createFolder(@Valid @RequestBody final FolderCreateRequest request) {
+        final UUID folderId = folderService.createFolder(request);
         return ResponseEntity.ok().body(folderId);
     }
     
@@ -36,7 +37,7 @@ public class FriendFolderController {
     }
     
     @GetMapping
-    public ResponseEntity<List<FriendFolderResponseDto>> getFolders(@RequestParam final Long userId) {
+    public ResponseEntity<List<FriendFolderResponseDto>> getFolders(@RequestParam final UUID userId) {
         final List<FriendFolderResponseDto> folders = folderService.getFolders(userId);
         return ResponseEntity.ok().body(folders);
     }

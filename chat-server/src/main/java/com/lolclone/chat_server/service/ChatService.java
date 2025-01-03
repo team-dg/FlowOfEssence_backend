@@ -2,6 +2,7 @@ package com.lolclone.chat_server.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,25 +32,25 @@ public class ChatService {
     /**
      * 친구 관계 검증
      */
-    private void validateFriendRelationship(Long userId, Long friendId) {
+    private void validateFriendRelationship(UUID userId, UUID friendId) {
         if (!friendService.isFriend(userId, friendId)) {
             throw new BadRequestException(ExceptionType.NOT_FRIEND);
         }
     }
     
-    public void sendMessage(Long senderId, Long receiverId, String content) {
+    public void sendMessage(UUID senderId, UUID receiverId, String content) {
         // 친구 관계 검증
-        validateFriendRelationship(senderId, receiverId);
+        //validateFriendRelationship(senderId, receiverId);
         
         // 메시지 저장
         Message message = Message.of(senderId, receiverId, content);
-        
+        messageRepository.save(message);
         // WebSocket을 통해 메시지 전송
         messageHandler.sendMessageToUser(message);
     }
     
     @Transactional(readOnly = true)
-    public List<MessageDto> getChatHistory(Long userId, Long friendId) {
+    public List<MessageDto> getChatHistory(UUID userId, UUID friendId) {
         validateFriendRelationship(userId, friendId);
         
         List<Message> messages = messageRepository.findChatHistory(userId, friendId);
@@ -60,7 +61,7 @@ public class ChatService {
             .collect(Collectors.toList());
     }
     
-    public void deleteChat(Long userId, Long friendId) {
+    public void deleteChat(UUID userId, UUID friendId) {
         validateFriendRelationship(userId, friendId);
         
         List<Message> messages = messageRepository.findChatHistory(userId, friendId);

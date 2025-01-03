@@ -1,12 +1,14 @@
 package com.lolclone.chat_server.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 import com.lolclone.chat_server.domain.Message;
 
 public record MessageDto(
-    Long messageId,
-    Long senderId,
-    Long receiverId,
+    UUID messageId,
+    UUID senderId,
+    UUID receiverId,
     String message,
     LocalDateTime createdAt
 ) {

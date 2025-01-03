@@ -6,6 +6,9 @@ import com.lolclone.chat_server.exception.common.NotFoundException;
 import com.lolclone.chat_server.exception.domain.ExceptionType;
 import com.lolclone.chat_server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.util.UUID;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
     
-    public String getUsername(final Long userId) {
+    public String getUsername(final UUID userId) {
         return userRepository.findUsernameById(userId)
             .orElseThrow(() -> new NotFoundException(ExceptionType.INVALID_RECEIVER));
     }
@@ -40,7 +43,7 @@ public class UserService {
         eventPublisher.publishEvent(event);
     }
     
-    public boolean exists(Long userId) {
+    public boolean exists(UUID userId) {
         return userRepository.existsById(userId);
     }
 } 

@@ -1,0 +1,12 @@
+dependencies {
+    //Chat-Service-API
+    implementation project(':chat-server:chat-service-api')
+    //WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    //Authentication-management-API
+	implementation project(':authentication-management-server:authentication-management-service-api')
+}
+
+test {
+    enabled = false
+}

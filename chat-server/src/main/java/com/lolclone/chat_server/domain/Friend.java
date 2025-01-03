@@ -3,6 +3,11 @@ package com.lolclone.chat_server.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import com.lolclone.chat_server.common.domain.BaseTimeEntity;
 
 import jakarta.persistence.*;
@@ -12,11 +17,11 @@ import jakarta.persistence.*;
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_user_friend",
-            columnNames = {"user_id", "friend_id"}
+            columnNames = {"user_id", "friend_user_id"}
         )
     },
     indexes = {
-        @Index(name = "idx_user_friend", columnList = "user_id, friend_id")
+        @Index(name = "idx_user_friend", columnList = "user_id, friend_user_id")
     }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,15 +29,20 @@ import jakarta.persistence.*;
 public class Friend extends BaseTimeEntity {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+        name = "UUID",
+        strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "friend_id", columnDefinition = "uuid")
+    private UUID id;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "friend_id", nullable = false)
+    @JoinColumn(name = "friend_user_id", nullable = false)
     private User friend;
 
     @Column(length = 500)
@@ -49,11 +59,11 @@ public class Friend extends BaseTimeEntity {
         return new Friend(user, friend);
     }
     
-    public Long getUserId() {
+    public UUID getUserId() {
         return user.getId();
     }
     
-    public Long getFriendId() {
+    public UUID getFriendId() {
         return friend.getId();
     }
     

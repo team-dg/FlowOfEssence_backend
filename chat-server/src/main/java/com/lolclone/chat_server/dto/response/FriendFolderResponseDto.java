@@ -1,9 +1,11 @@
 package com.lolclone.chat_server.dto.response;
 
+import java.util.UUID;
+
 import com.lolclone.chat_server.domain.FriendFolder;
 
 public record FriendFolderResponseDto(
-    Long folderId,
+    UUID folderId,
     String folderName,
     int friendCount
 ) {

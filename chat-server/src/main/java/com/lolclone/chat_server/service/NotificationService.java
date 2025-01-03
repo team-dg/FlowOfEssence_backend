@@ -6,6 +6,9 @@ import com.lolclone.chat_server.exception.common.ForbiddenException;
 import com.lolclone.chat_server.exception.domain.ExceptionType;
 import com.lolclone.chat_server.handler.MessageHandler;
 import lombok.RequiredArgsConstructor;
+
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,7 +21,7 @@ public class NotificationService {
     /**
      * 친구 요청 알림을 전송합니다.
      */
-    public void sendFriendRequestNotification(Long receiverId, Long senderId) {
+    public void sendFriendRequestNotification(UUID receiverId, UUID senderId) {
         String senderName = userService.getUsername(senderId);
         NotificationMessage notification = NotificationMessage.ofFriendRequest(senderId, senderName);
         messageHandler.sendNotificationToUser(receiverId, notification);
@@ -27,13 +30,13 @@ public class NotificationService {
     /**
      * 친구 요청 수락 알림을 전송합니다.
      */
-    public void sendFriendAcceptNotification(Long receiverId, Long accepterId) {
+    public void sendFriendAcceptNotification(UUID receiverId, UUID accepterId) {
         String accepterName = userService.getUsername(accepterId);
         NotificationMessage notification = NotificationMessage.ofFriendAccept(accepterId, accepterName);
         messageHandler.sendNotificationToUser(receiverId, notification);
     }
     
-    public void sendGameInvitation(Long senderId, Long receiverId, Long roomId, String message, boolean isBlocked) {
+    public void sendGameInvitation(UUID senderId, UUID receiverId, UUID roomId, String message, boolean isBlocked) {
         // 차단 여부 확인
         if (isBlocked) {
             throw new ForbiddenException(ExceptionType.BLOCKED_USER);

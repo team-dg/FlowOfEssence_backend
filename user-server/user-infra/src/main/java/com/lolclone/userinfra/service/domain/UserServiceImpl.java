@@ -29,7 +29,6 @@ public class UserServiceImpl implements UserService {
         Member user = Member.of(userId, nickname);
         userRepository.findById(userId).orElseGet(() -> userRepository.save(user));
         List<UserDomainEvent> events = user.createUser();
-        log.info("user: {}, events: {}", user, events);
         domainEventPublisher.publish(user, events);
     }
 

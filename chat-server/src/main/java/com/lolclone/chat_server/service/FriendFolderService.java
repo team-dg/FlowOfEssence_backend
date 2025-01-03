@@ -16,6 +16,7 @@ import com.lolclone.chat_server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class FriendFolderService {
     private final UserRepository userRepository;
     
     @Transactional
-    public Long createFolder(final FolderCreateRequest request) {
+    public UUID createFolder(final FolderCreateRequest request) {
         final User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new NotFoundException(ExceptionType.USER_NOT_FOUND));
 
@@ -59,7 +60,7 @@ public class FriendFolderService {
         }
     }
     
-    public List<FriendFolderResponseDto> getFolders(final Long userId) {
+    public List<FriendFolderResponseDto> getFolders(final UUID userId) {
         return folderRepository.findByUserId(userId)
             .stream()
             .map(FriendFolderResponseDto::from)
@@ -67,7 +68,7 @@ public class FriendFolderService {
     }
     
     @Transactional
-    public void updateFolderName(final Long folderId, final String newName, final Long userId) {
+    public void updateFolderName(final UUID folderId, final String newName, final UUID userId) {
         final FriendFolder folder = folderRepository.findById(folderId)
             .orElseThrow(() -> new NotFoundException(ExceptionType.FOLDER_NOT_FOUND));
             
@@ -83,7 +84,7 @@ public class FriendFolderService {
     }
     
     @Transactional
-    public void deleteFolder(final Long folderId, final Long userId) {
+    public void deleteFolder(final UUID folderId, final UUID userId) {
         final FriendFolder folder = folderRepository.findById(folderId)
             .orElseThrow(() -> new NotFoundException(ExceptionType.FOLDER_NOT_FOUND));
             
@@ -95,7 +96,7 @@ public class FriendFolderService {
     }
     
     @Transactional
-    public void updateFriendOrder(final Long folderId, final Long friendId, final int newOrder) {
+    public void updateFriendOrder(final UUID folderId, final UUID friendId, final int newOrder) {
         final FriendFolder folder = folderRepository.findByIdWithFriends(folderId)
             .orElseThrow(() -> new NotFoundException(ExceptionType.FOLDER_NOT_FOUND));
             

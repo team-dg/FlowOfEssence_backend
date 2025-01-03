@@ -4,6 +4,11 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import com.lolclone.chat_server.common.domain.BaseTimeEntity;
 
 @Entity
@@ -20,8 +25,13 @@ import com.lolclone.chat_server.common.domain.BaseTimeEntity;
 public class FolderFriend extends BaseTimeEntity {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+        name = "UUID",
+        strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "folder_friend_id", columnDefinition = "uuid")
+    private UUID id;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "folder_id", nullable = false)

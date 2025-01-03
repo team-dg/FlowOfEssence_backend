@@ -8,8 +8,9 @@ import com.lolclone.chat_server.domain.Message;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
-public interface MessageRepository extends JpaRepository<Message, Long> {
+public interface MessageRepository extends JpaRepository<Message, UUID> {
     
     @Query("""
         SELECT m FROM Message m 
@@ -18,8 +19,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         ORDER BY m.createdDate DESC
         """)
     List<Message> findChatHistory(
-        @Param("userId") Long userId,
-        @Param("friendId") Long friendId
+        @Param("userId") UUID userId,
+        @Param("friendId") UUID friendId
     );
     
     @Query("""

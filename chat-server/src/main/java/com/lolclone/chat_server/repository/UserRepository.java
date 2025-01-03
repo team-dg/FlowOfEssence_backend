@@ -7,13 +7,14 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     @Override
-    Optional<User> findById(Long id);
+    Optional<User> findById(UUID id);
     
     @Query("SELECT u.nickname FROM User u WHERE u.id = :id")
-    Optional<String> findUsernameById(@Param("id") Long id);
+    Optional<String> findUsernameById(@Param("id") UUID id);
     
     boolean existsByNickname(String nickname);
     
@@ -26,7 +27,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         "(LOWER(u.nickname) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
         "LOWER(u.tag) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
         "u.id IN (SELECT f.friend.id FROM Friend f WHERE f.user.id = :userId)")
-    List<User> searchFriendsByQuery(@Param("userId") Long userId, @Param("query") String query);
+    List<User> searchFriendsByQuery(@Param("userId") UUID userId, @Param("query") String query);
     
     @Query("SELECT u FROM User u WHERE " +
            "LOWER(u.nickname) LIKE LOWER(CONCAT('%', :nickname, '%')) " +
@@ -57,7 +58,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 u.nickname
             LIMIT :size""", nativeQuery = true)
     List<User> searchFriendsForMessageWindow(
-            @Param("userId") Long userId,
+            @Param("userId") UUID userId,
             @Param("query") String query,
             @Param("size") int size);
 } 

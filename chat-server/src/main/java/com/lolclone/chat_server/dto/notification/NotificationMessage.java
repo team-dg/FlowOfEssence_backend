@@ -1,12 +1,14 @@
 package com.lolclone.chat_server.dto.notification;
 
+import java.util.UUID;
+
 public record NotificationMessage(
     NotificationType type,
-    Long senderId,
+    UUID senderId,
     String senderName,
     String message
 ) {
-    public static NotificationMessage ofFriendRequest(Long senderId, String senderName) {
+    public static NotificationMessage ofFriendRequest(UUID senderId, String senderName) {
         return new NotificationMessage(
             NotificationType.FRIEND_REQUEST,
             senderId,
@@ -15,7 +17,7 @@ public record NotificationMessage(
         );
     }
     
-    public static NotificationMessage ofFriendAccept(Long accepterId, String accepterName) {
+    public static NotificationMessage ofFriendAccept(UUID accepterId, String accepterName) {
         return new NotificationMessage(
             NotificationType.FRIEND_ACCEPT,
             accepterId,

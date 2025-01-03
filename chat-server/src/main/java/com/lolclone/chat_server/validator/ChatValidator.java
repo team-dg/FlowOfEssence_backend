@@ -8,6 +8,7 @@ import com.lolclone.chat_server.exception.domain.ExceptionType;
 import com.lolclone.chat_server.domain.Message;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public final class ChatValidator {
@@ -29,7 +30,7 @@ public final class ChatValidator {
      * @param receiverId 수신자 ID
      * @throws BadRequestException ID가 null이거나 발신자와 수신자가 동일한 경우
      */
-    public void validateFriendRequest(Long senderId, Long receiverId) {
+    public void validateFriendRequest(UUID senderId, UUID receiverId) {
         if (senderId == null || receiverId == null) {
             throw new BadRequestException(ExceptionType.INVALID_REQUEST_ARGUMENT);
         }

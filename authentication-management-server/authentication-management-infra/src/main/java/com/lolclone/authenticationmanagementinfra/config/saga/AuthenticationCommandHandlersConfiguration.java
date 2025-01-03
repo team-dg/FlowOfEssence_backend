@@ -3,7 +3,7 @@ package com.lolclone.authenticationmanagementinfra.config.saga;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.lolclone.authenticationmanagementinfra.sagaorchestrator.handler.AuthenticationCommandHandlers;
+import com.lolclone.authenticationmanagementinfra.sagaorchestrator.command.AuthenticationCommandHandlers;
 import com.lolclone.authenticationmanagementinfra.service.application.UserAuthService;
 import com.lolclone.authenticationmanagementinfra.service.domain.MemberService;
 

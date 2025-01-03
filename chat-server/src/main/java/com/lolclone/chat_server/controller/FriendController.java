@@ -7,6 +7,7 @@ import com.lolclone.chat_server.dto.request.FriendRequestDto;
 import com.lolclone.chat_server.dto.request.GetFriendInfoRequest;
 import com.lolclone.chat_server.dto.request.MemoRequest;
 import com.lolclone.chat_server.dto.request.FriendSearchRequest;
+import com.lolclone.chat_server.dto.request.FriendSearchRequest1;
 import com.lolclone.chat_server.dto.response.FriendRequestResponseDto;
 import com.lolclone.chat_server.dto.response.FriendResponseDto;
 import com.lolclone.chat_server.service.FriendService;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/friends")
@@ -27,21 +29,21 @@ public class FriendController {
     
     @GetMapping("/list")
     public ResponseEntity<List<FriendResponseDto>> getFriendsList(
-            @Valid @RequestParam final Long userId) {
+            @Valid @RequestParam final UUID userId) {
         final List<FriendResponseDto> friends = friendService.getFriendsList(userId);
         return ResponseEntity.ok().body(friends);
     }
     
     @GetMapping("/sort/alphabetical")
     public ResponseEntity<List<FriendResponseDto>> sortByAlphabetical(
-            @Valid @RequestParam final Long userId) {
+            @Valid @RequestParam final UUID userId) {
         final List<FriendResponseDto> friends = friendService.sortByAlphabetical(userId);
         return ResponseEntity.ok().body(friends);
     }
     
     @GetMapping("/sort/status")
     public ResponseEntity<List<FriendResponseDto>> sortByStatus(
-            @Valid @RequestParam final Long userId) {
+            @Valid @RequestParam final UUID userId) {
         final List<FriendResponseDto> friends = friendService.sortByStatus(userId);
         return ResponseEntity.ok().body(friends);
     }
@@ -62,7 +64,7 @@ public class FriendController {
     
     @GetMapping("/requests")
     public ResponseEntity<List<FriendRequestResponseDto>> getPendingRequests(
-            @Valid @RequestParam final Long userId) {
+            @Valid @RequestParam final UUID userId) {
         final List<FriendRequestResponseDto> requests = friendService.getPendingRequests(userId);
         return ResponseEntity.ok().body(requests);
     }
@@ -102,10 +104,17 @@ public class FriendController {
         return ResponseEntity.ok().body(friendInfo);
     }
 
-    @PostMapping("/search")
-    public ResponseEntity<List<FriendResponseDto>> searchFriends(
+    @PostMapping("/searchWindow")
+    public ResponseEntity<List<FriendResponseDto>> searchFriendsInMessageWindow(
             @Valid @RequestBody final FriendSearchRequest request) {
         final List<FriendResponseDto> friends = friendService.searchFriendsInMessageWindow(request);
         return ResponseEntity.ok().body(friends);
     }
-} 
+
+    @PostMapping("/search")
+    public ResponseEntity<List<FriendResponseDto>> searchFriends(
+            @Valid @RequestBody final FriendSearchRequest1 request) {
+        final List<FriendResponseDto> friends = friendService.searchFriends(request.userId(), request.nickname(), request.tag());
+        return ResponseEntity.ok().body(friends);
+    }
+}

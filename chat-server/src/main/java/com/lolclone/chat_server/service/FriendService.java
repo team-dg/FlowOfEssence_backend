@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.lolclone.chat_server.exception.common.BadRequestException;
@@ -46,7 +47,7 @@ public class FriendService {
      * @param userId 친구 목록을 조회할 사용자의 ID
      * @return 친구 목록 DTO 리스트
      */
-    public List<FriendResponseDto> getFriendsList(final Long userId) {
+    public List<FriendResponseDto> getFriendsList(final UUID userId) {
         final List<Friend> friends = friendRepository.findByUserId(userId);
         return friends.stream()
             .map(FriendResponseDto::from)
@@ -58,7 +59,7 @@ public class FriendService {
      * @param userId 친구 목록을 조회할 사용자의 ID
      * @return 이름순으로 정렬된 친구 목록 DTO 리스트
      */
-    public List<FriendResponseDto> sortByAlphabetical(final Long userId) {
+    public List<FriendResponseDto> sortByAlphabetical(final UUID userId) {
         final List<Friend> friends = friendRepository.findByUserIdOrderByFriendNameAsc(userId);
         // db 쿼리를 통해 정렬을 해서 가져오는건 유니코드 기반이므로 한국어 고유의 순서를 보장하지 않을 수 있다.
         final Collator koreanCollator = Collator.getInstance(Locale.KOREAN);
@@ -76,7 +77,7 @@ public class FriendService {
      * @param userId 친구 목록을 조회할 사용자의 ID
      * @return 상태순으로 정렬된 친구 목록 DTO 리스트
      */
-    public List<FriendResponseDto> sortByStatus(final Long userId) {
+    public List<FriendResponseDto> sortByStatus(final UUID userId) {
         final List<Friend> friends = friendRepository.findByUserId(userId);
         final Collator koreanCollator = Collator.getInstance(Locale.KOREAN);
         
@@ -101,7 +102,7 @@ public class FriendService {
      * @param friendId 두 번째 사용자 ID
      * @return 친구 관계이면 true, 아니면 false
      */
-    public boolean isFriend(final Long userId, final Long friendId) {
+    public boolean isFriend(final UUID userId, final UUID friendId) {
         return friendRepository.existsByUserIdAndFriendId(userId, friendId);
     }
     
@@ -109,11 +110,11 @@ public class FriendService {
      * 친구 추가 요청을 보냅니다.
      */
     @Transactional
-    public void sendFriendRequest(final Long senderId, final String receiverNickname) {
+    public void sendFriendRequest(final UUID senderId, final String receiverNickname) {
         final User receiver = userRepository.findByNickname(receiverNickname)
                 .orElseThrow(() -> new NotFoundException(ExceptionType.USER_NOT_FOUND));
         
-        Long receiverId = receiver.getId();
+        UUID receiverId = receiver.getId();
         // 입력값 기본 검증
         chatValidator.validateFriendRequest(senderId, receiverId);
         
@@ -138,7 +139,7 @@ public class FriendService {
      * 친구 요청을 수락합니다.
      */
     @Transactional
-    public void acceptFriendRequest(final Long receiverId, final Long requesterId) {
+    public void acceptFriendRequest(final UUID receiverId, final UUID requesterId) {
         if (!friendRequestRepository.existsBySenderIdAndReceiverId(requesterId, receiverId)) {
             throw new NotFoundException(ExceptionType.CHAT_HISTORY_NOT_FOUND);
         }
@@ -160,14 +161,14 @@ public class FriendService {
      * @param userId 조회할 사용자의 ID
      * @return 친구 요청 DTO 리스트
      */
-    public List<FriendRequestResponseDto> getPendingRequests(final Long userId) {
+    public List<FriendRequestResponseDto> getPendingRequests(final UUID userId) {
         return friendRequestRepository.findByReceiverId(userId).stream()
             .map(FriendRequestResponseDto::from)
             .collect(Collectors.toList());
     }
 
     @Transactional
-    public void blockFriend(final Long userId, final Long friendId) {
+    public void blockFriend(final UUID userId, final UUID friendId) {
         final Friend friendship = friendRepository.findByUserIdAndFriendId(userId, friendId)
             .orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_NOT_FOUND));
         friendship.setBlocked(true);
@@ -175,7 +176,7 @@ public class FriendService {
     }
 
     @Transactional
-    public void unblockFriend(final Long userId, final Long friendId) {
+    public void unblockFriend(final UUID userId, final UUID friendId) {
         final Friend friendship = friendRepository.findByUserIdAndFriendId(userId, friendId)
             .orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_NOT_FOUND));
         friendship.setBlocked(false);
@@ -183,7 +184,7 @@ public class FriendService {
     }
 
     @Transactional
-    public void updateFriendMemo(final Long userId, final Long friendId, final String memo) {
+    public void updateFriendMemo(final UUID userId, final UUID friendId, final String memo) {
         if (memo != null && memo.length() > 500) {
             throw new BadRequestException(ExceptionType.INVALID_REQUEST_ARGUMENT);
         }
@@ -194,13 +195,13 @@ public class FriendService {
     }
 
     @Transactional
-    public void deleteFriend(final Long userId, final Long friendId) {
+    public void deleteFriend(final UUID userId, final UUID friendId) {
         final Friend friendship = friendRepository.findByUserIdAndFriendId(userId, friendId)
             .orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_NOT_FOUND));
         friendRepository.delete(friendship);
     }
 
-    public FriendResponseDto getFriendInfo(final Long userId, final Long friendId) {
+    public FriendResponseDto getFriendInfo(final UUID userId, final UUID friendId) {
         final Friend friendship = friendRepository.findByUserIdAndFriendId(userId, friendId)
             .orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_NOT_FOUND));
         
@@ -213,20 +214,20 @@ public class FriendService {
      * @param targetId 차단 여부를 확인할 대상의 ID
      * @return 차단되었다면 true, 아니면 false
      */
-    public boolean isBlocked(final Long userId, final Long targetId) {
+    public boolean isBlocked(final UUID userId, final UUID targetId) {
         return friendRepository.findByUserIdAndFriendId(userId, targetId)
             .map(Friend::isBlocked)
             .orElse(false);
     }
 
-    public void sendGameInvitation(final Long senderId, final Long receiverId, final Long roomId, final String message) {
+    public void sendGameInvitation(final UUID senderId, final UUID receiverId, final UUID roomId, final String message) {
         final boolean isBlocked = isBlocked(senderId, receiverId);
         notificationService.sendGameInvitation(senderId, receiverId, roomId, message, isBlocked);
     }
 
     // 친구 검색
     @Transactional(readOnly = true)
-    public List<FriendResponseDto> searchFriends(final Long userId, final String nickname, final String tag) {
+    public List<FriendResponseDto> searchFriends(final UUID userId, final String nickname, final String tag) {
         final List<User> friends = userRepository.findByNicknameContainingAndTagContaining(nickname, tag);
         return friends.stream()
             .filter(friend -> friendRepository.existsByUserIdAndFriendId(userId, friend.getId()))
