@@ -1,0 +1,8 @@
+dependencies {
+    //Authentication-management-domain
+    api project(':authentication-management-server:authentication-management-domain')
+}
+
+test {
+    enabled = false
+}

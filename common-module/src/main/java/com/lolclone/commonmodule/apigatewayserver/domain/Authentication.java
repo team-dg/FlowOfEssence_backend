@@ -1,7 +1,9 @@
 package com.lolclone.commonmodule.apigatewayserver.domain;
 
+import java.util.UUID;
+
 public interface Authentication {
-    Long getId();
+    UUID getId();
 
     Role getRole();
 }

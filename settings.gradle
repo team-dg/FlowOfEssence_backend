@@ -1,11 +1,28 @@
 rootProject.name = 'flowofessence'
 
-include('game-server')
+include('authentication-management-server:authentication-management-domain')
+include('authentication-management-server:authentication-management-infra')
+include('authentication-management-server:authentication-management-service-api')
+include('authentication-management-server:authentication-management-service-contracts')
+
+include('user-server:user-domain')
+include('user-server:user-infra')
+include('user-server:user-service-api')
+include('user-server:user-service-contracts')
+
+include('chat-server:chat-domain')
+include('chat-server:chat-infra')
+include('chat-server:chat-service-api')
+include('chat-server:chat-service-contracts')
+
+include('api-gateway-server:api-gateway-domain')
+include('api-gateway-server:api-gateway-infra')
+include('api-gateway-server:api-gateway-service-api')
+
+include('saga-orchestrator-server:saga-orchestrator-domain')
+include('saga-orchestrator-server:saga-orchestrator-infra')
+include('saga-orchestrator-server:saga-orchestrator-service-api')
+
 include('matchmaking-server')
-include('authentication-management-server')
-include('chat-server')
-include('api-service-server')
-include('api-gateway-server')
 include('logging-monitoring-server')
-include('content-delivery-server')
 include('common-module')

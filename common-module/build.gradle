@@ -2,5 +2,38 @@ bootJar { enabled = false }
 jar { enabled = true }
 
 dependencies {
-
+    //JWT
+    api 'io.jsonwebtoken:jjwt-api:0.12.5'
+    //Security
+    api "org.springframework.security:spring-security-crypto"
+	//JPA
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+	//PostgreSQL
+    api 'org.postgresql:postgresql'
+    //Web
+    api 'org.springframework.boot:spring-boot-starter-web'
+    //QueryDSL
+    api 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    // Actuator
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    // Simple DSL
+    api "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-orchestration-simple-dsl-starter:${eventuateTramSagasVersion}"
+    // Saga Participant
+    api "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-participant-starter:${eventuateTramSagasVersion}"
+    // Eventuate Tram Consumer
+    api "io.eventuate.tram.core:eventuate-tram-spring-consumer-kafka:${eventuateTramVersion}"
+    // Eventuate Tram Producer
+    api "io.eventuate.tram.core:eventuate-tram-spring-producer-jdbc:${eventuateTramVersion}"
+    // Eventuate Tram Aggregate Domain Events
+    api "io.eventuate.tram.core:eventuate-tram-aggregate-domain-events:${eventuateTramVersion}"
+    //Validation
+    api 'org.springframework.boot:spring-boot-starter-validation'
+    // Jackson
+    api 'com.fasterxml.jackson.core:jackson-core:2.15.3'
+    // Jackson Databind
+    api 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
+    // Jackson Annotations
+    api 'com.fasterxml.jackson.core:jackson-annotations:2.15.3'
+    // Brave
+    api 'io.micrometer:micrometer-tracing-bridge-brave'
 }

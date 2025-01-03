@@ -29,6 +29,9 @@ subprojects {
 
     ext {
         set('springCloudVersion', "2022.0.4")
+        set('eventuateTramVersion', "0.35.0.RELEASE")
+        set('eventuateTramSagasVersion', "0.24.0.RELEASE")
+        set('eventuateCommonVersion', "0.19.0.RELEASE")
     }
     dependencyManagement {
         imports {
@@ -37,8 +40,6 @@ subprojects {
     }
 
     dependencies {
-        //Validation
-	    implementation 'org.springframework.boot:spring-boot-starter-validation'
         //Lombok
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
