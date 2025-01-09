@@ -43,12 +43,13 @@ public class ChatRoom extends BaseTimeEntity {
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatParticipant> participants;
 
-    private boolean active = true;
+    private boolean active;
 
     @Builder
     private ChatRoom(ChatRoomType type) {
         this.type = type;
         this.participants = new ArrayList<>();
+        this.active = true;
     }
 
     // 정적 팩토리 메서드

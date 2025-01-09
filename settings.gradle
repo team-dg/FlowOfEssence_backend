@@ -19,10 +19,6 @@ include('api-gateway-server:api-gateway-domain')
 include('api-gateway-server:api-gateway-infra')
 include('api-gateway-server:api-gateway-service-api')
 
-include('saga-orchestrator-server:saga-orchestrator-domain')
-include('saga-orchestrator-server:saga-orchestrator-infra')
-include('saga-orchestrator-server:saga-orchestrator-service-api')
-
 include('matchmaking-server')
 include('logging-monitoring-server')
 include('common-module')

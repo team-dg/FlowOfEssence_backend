@@ -69,10 +69,10 @@ public class FriendService {
     }
 
     /**
-     * 사용자의 모든 친구 목록 조회
+     * 차단되지 않은 사용자의 모든 친구 목록 조회
      */
-    public List<Friend> getUserFriends(final Member user) {
-        return friendRepository.findByUser(user);
+    public List<Friend> getActiveFriends(final Member user) {
+        return friendRepository.findByUserAndBlockedFalseAndBlockedByFalse(user);
     }
 
     /**
@@ -91,6 +91,15 @@ public class FriendService {
     }
 
     /**
+     * 친구 관계인지 확인
+     * 
+     * @return 친구인 경우 Friend, 아닌 경우 null
+     */
+    public Friend findFriendship(final Member user, final Member otherUser) {
+        return friendRepository.findByUserAndFriend(user, otherUser).orElse(null);
+    }
+
+    /**
      * 친구가 차단되었는지 확인
      */
     public boolean isBlocked(final UUID friendId) {
@@ -100,7 +109,7 @@ public class FriendService {
 
     private void validateNotAlreadyFriends(final Member user, final Member friend) {
         if (areFriends(user, friend)) {
-            throw new BadRequestException(ExceptionType.FRIEND_REQUEST_ALREADY_SENT);
+            throw new BadRequestException(ExceptionType.ALREADY_FRIENDS);
         }
     }
 
@@ -114,18 +123,43 @@ public class FriendService {
     }
 
     /**
-     * 친구 목록을 닉네임순으로 정렬하여 조회
+     * 차단되지 않은 활성 친구 목록을 닉네임순으로 정렬하여 조회
      * @param user 사용자
      * @return 닉네임순으로 정렬된 친구 목록
      */
-    public List<Friend> getFriendsSortedByNickname(final Member user) {
-        List<Friend> friends = friendRepository.findByUser(user);
+    public List<Friend> getActiveFriendsSortedByNickname(final Member user) {
+        List<Friend> friends = friendRepository.findByUserAndIsBlockedFalse(user);
         return friends.stream()
-        .sorted((f1, f2) -> {
-            String nick1 = f1.getFriend().getNickname();
-            String nick2 = f2.getFriend().getNickname();
-            return Collator.getInstance(Locale.KOREAN).compare(nick1, nick2);
-        })
-        .collect(Collectors.toList());
+            .sorted((f1, f2) -> {
+                String nick1 = f1.getFriend().getNickname();
+                String nick2 = f2.getFriend().getNickname();
+                return Collator.getInstance(Locale.KOREAN).compare(nick1, nick2);
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 친구 관계 삭제
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void deleteFriendship(final Member user, final Member friend) {
+        friendRepository.findByUserAndFriend(user, friend)
+                .ifPresent(friendship -> friendRepository.delete(friendship));
+    }
+
+    /**
+     * 닉네임으로 친구 검색
+     */
+    public List<Friend> searchFriends(final Member user, final String nicknameKeyword, final String tagKeyword) {
+        List<Friend> friends = friendRepository.findByUserAndIsBlockedFalse(user);
+        return friends.stream()
+                .filter(friend -> {
+                    boolean matchesNickname = nicknameKeyword == null ||
+                            friend.getFriend().getNickname().toLowerCase().contains(nicknameKeyword.toLowerCase());
+                    boolean matchesTag = tagKeyword == null ||
+                            friend.getFriend().hasTag(tagKeyword);
+                    return matchesNickname && matchesTag;
+                })
+                .collect(Collectors.toList());
     }
 }

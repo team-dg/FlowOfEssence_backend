@@ -47,10 +47,9 @@ public class FriendRequest extends BaseTimeEntity {
     /**
      * 친구 요청 수락
      */
-    public Friend accept() {
+    public void accept() {
         validatePendingStatus();
         this.status = FriendStatus.ACCEPTED;
-        return Friend.of(requester, receiver);
     }
 
     /**
@@ -58,6 +57,21 @@ public class FriendRequest extends BaseTimeEntity {
      */
     public void reject() {
         validatePendingStatus();
+        this.status = FriendStatus.REJECTED;
+    }
+
+    /**
+     * 게임 초대 요청 수락
+     */
+    public Friend acceptGameInvite() {
+        this.status = FriendStatus.ACCEPTED;
+        return Friend.of(requester, receiver);
+    }
+
+    /**
+     * 게임 초대 요청 거절
+     */
+    public void rejectGameInvite() {
         this.status = FriendStatus.REJECTED;
     }
 

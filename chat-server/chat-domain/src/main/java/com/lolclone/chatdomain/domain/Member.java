@@ -1,6 +1,7 @@
 package com.lolclone.chatdomain.domain;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.lolclone.chatdomain.common.BaseEntity;
@@ -13,6 +14,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import static java.util.Collections.singletonList;
+
+import java.util.HashSet;
 
 /**
  * Entity 책임
@@ -43,8 +46,9 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private MemberStatus status = MemberStatus.OFFLINE;
 
-    @Column(nullable = false, length = 10)
-    private String tag = "KR1"; // 기본값 설정
+    @ElementCollection
+    @CollectionTable(name = "member_tags")
+    private Set<String> tags = new HashSet<>();
 
     @Column(length = 30)
     private String lastLogin;
@@ -107,5 +111,10 @@ public class Member extends BaseEntity {
 
     public void setOnline(boolean status) {
         this.online = status;
+    }
+
+    public boolean hasTag(String tag) {
+        return tags.stream()
+                .anyMatch(t -> t.toLowerCase().contains(tag.toLowerCase()));
     }
 }

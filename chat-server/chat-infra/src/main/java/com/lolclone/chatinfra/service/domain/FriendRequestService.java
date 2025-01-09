@@ -2,7 +2,6 @@ package com.lolclone.chatinfra.service.domain;
 
 import java.util.List;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final NotificationService notificationService;
+    private final FriendService friendService;
 
     public FriendRequest getOrThrow(final Long id) {
         return friendRequestRepository.findById(id).orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_REQUEST_NOT_FOUND));
@@ -38,6 +38,7 @@ public class FriendRequestService {
     public FriendRequest createFriendRequest(final Member requester, final Member receiver) {
         validateNotAlreadyRequested(requester, receiver);
         FriendRequest request = FriendRequest.create(requester, receiver);
+        notificationService.sendFriendRequestNotification(request);
         return friendRequestRepository.save(request);
     }
 
@@ -47,9 +48,11 @@ public class FriendRequestService {
     @Transactional(propagation = Propagation.MANDATORY)
     public Friend acceptFriendRequest(final Long requestId) {
         FriendRequest request = getOrThrow(requestId);
-        Friend friend = request.accept();
-        // 친구 요청 수락 이벤트 발행 (필요한 경우)
-        return friend;
+        // 친구 관계 생성
+        Friend friendShip = friendService.createFriendship(request.getRequester(), request.getReceiver());
+        request.accept();
+        notificationService.sendFriendRequestAcceptedNotification(request);
+        return friendShip;
     }
 
     /**
@@ -59,7 +62,39 @@ public class FriendRequestService {
     public void rejectFriendRequest(final Long requestId) {
         FriendRequest request = getOrThrow(requestId);
         request.reject();
-        // 친구 요청 거절 이벤트 발행 (필요한 경우)
+        notificationService.sendFriendRequestRejectedNotification(request);
+    }
+
+    /**
+     * 게임 초대 요청 생성
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public FriendRequest createGameInviteRequest(final Member requester, final Member receiver) {
+        FriendRequest request = FriendRequest.create(requester, receiver);
+        notificationService.sendGameInviteNotification(request);
+        return friendRequestRepository.save(request);
+    }
+
+    /**
+     * 게임 초대 요청 수락
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Friend acceptGameInviteRequest(final Long requestId) {
+        FriendRequest request = getOrThrow(requestId);
+        // TODO: 게임 방 참가 로직 작성
+        request.acceptGameInvite();
+        notificationService.sendGameInviteAcceptedNotification(request);
+        return null;
+    }
+
+    /**
+     * 게임 초대 요청 거절
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void rejectGameInviteRequest(final Long requestId) {
+        FriendRequest request = getOrThrow(requestId);
+        request.rejectGameInvite();
+        notificationService.sendGameInviteRejectedNotification(request);
     }
 
     /**
@@ -92,5 +127,12 @@ public class FriendRequestService {
                 .ifPresent(request -> {
                     throw new BadRequestException(ExceptionType.FRIEND_REQUEST_ALREADY_SENT);
                 });
+    }
+
+    /**
+     * 대기 중인 친구 요청 수 조회
+     */
+    public int countPendingRequests(final Member receiver) {
+        return friendRequestRepository.countByReceiverAndStatus(receiver, FriendStatus.PENDING);
     }
 }

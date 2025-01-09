@@ -1,5 +1,6 @@
 package com.lolclone.chatinfra.service.domain;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -122,6 +123,15 @@ public class ChatRoomService {
                     chatParticipantService.createChatParticipant(newRoom, user2);
                     return newRoom;
                 });
+    }
+
+    /**
+     * 두 사용자 간의 기존 1:1 채팅방을 조회합니다.
+     * 
+     * @return 존재하는 채팅방 또는 Optional.empty()
+     */
+    public Optional<ChatRoom> findPersonalRoom(final Member user1, final Member user2) {
+        return chatRoomRepository.findPersonalRoomByParticipants(user1, user2);
     }
 
     /**

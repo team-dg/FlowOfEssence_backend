@@ -26,10 +26,20 @@ public enum ExceptionType {
     NOT_PERSONAL_CHAT_ROOM(HttpStatus.BAD_REQUEST, "E014", "개인 채팅방이 아닙니다."),
     NOT_CHAT_PARTICIPANT(HttpStatus.BAD_REQUEST, "E015", "채팅방 참여자가 아닙니다."),
     RECIPIENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "E016", "수신자를 찾을 수 없습니다."),
-    
+    BLOCKED_BY_USER(HttpStatus.BAD_REQUEST, "E017", "상대방이 나를 차단했습니다."),
+    BLOCKED_USER(HttpStatus.BAD_REQUEST, "E018", "본인이 상대방을 차단했습니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "E019", "존재하지 않는 알림입니다."),
+    MAX_PENDING_REQUESTS_EXCEEDED(HttpStatus.BAD_REQUEST, "E020", "최대 대기 요청 수를 초과했습니다."),
+    ALREADY_FRIENDS(HttpStatus.BAD_REQUEST, "E021", "이미 친구입니다."),
+    RECIPIENT_OFFLINE(HttpStatus.BAD_REQUEST, "E022", "수신자가 오프라인입니다."),
+    RECIPIENT_IN_GAME(HttpStatus.BAD_REQUEST, "E023", "수신자가 게임 중입니다."),
+    SEARCH_KEYWORD_REQUIRED(HttpStatus.BAD_REQUEST, "E024", "검색어가 필요합니다."),
+    NOT_FOLDER_OWNER(HttpStatus.BAD_REQUEST, "E025", "폴더 소유자가 아닙니다."),
+
     //500
     EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "E003", "예상치 못한 오류가 발생했습니다."),
     PRIVATE_MESSAGE_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "E004", "메시지 전송에 실패했습니다."),
+    NOTIFICATION_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "E005", "알림 전송에 실패했습니다."),
     ;
 
     private final HttpStatus status;

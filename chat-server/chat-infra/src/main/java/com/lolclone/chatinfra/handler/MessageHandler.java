@@ -2,6 +2,7 @@ package com.lolclone.chatinfra.handler;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
 import com.lolclone.chatdomain.domain.Message;
 import com.lolclone.chatinfra.exception.commonexception.InternalServerException;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class MessageHandler {
     private final SimpMessagingTemplate messagingTemplate;

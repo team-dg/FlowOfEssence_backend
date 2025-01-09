@@ -81,7 +81,7 @@ public class ChatController {
     @GetMapping("/friends")
     public ResponseEntity<List<FriendChatInfoDto>> getFriendListSortedByNickname(
             @RequestAttribute("userId") final UUID userId) {
-        List<FriendChatInfoDto> friendChatInfos = chatService.getFriendListSortedByNickname(userId);
+        List<FriendChatInfoDto> friendChatInfos = chatService.getFriendList(userId, true);
         return ResponseEntity.ok(friendChatInfos);
     }
 }
