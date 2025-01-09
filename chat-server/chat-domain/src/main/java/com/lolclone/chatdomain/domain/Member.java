@@ -3,11 +3,12 @@ package com.lolclone.chatdomain.domain;
 import java.util.List;
 import java.util.UUID;
 
-import com.lolclone.chatdomain.common.BaseTimeEntity;
+import com.lolclone.chatdomain.common.BaseEntity;
 import com.lolclone.chatdomain.exception.UnsupportedStateTransitionException;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,7 +29,7 @@ import static java.util.Collections.singletonList;
             @Index(name = "idx_nickname_tag_status", columnList = "nickname,tag,status")
     }
 )
-public class Member extends BaseTimeEntity {
+public class Member extends BaseEntity {
     private static final int MAX_NICKNAME_LENGTH = 10;
 
     @Id
@@ -48,6 +49,9 @@ public class Member extends BaseTimeEntity {
     @Column(length = 30)
     private String lastLogin;
 
+    @Column(nullable = false)
+    private boolean online;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MemberState state;
@@ -55,9 +59,11 @@ public class Member extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private MemberState previousState;
 
+    @Builder
     private Member(UUID id, String nickname) {
         this.id = id;
         this.nickname = nickname;
+        this.online = false;
     }
 
     public static Member of(UUID id, String nickname) {
@@ -97,5 +103,9 @@ public class Member extends BaseTimeEntity {
             default:
                 throw new UnsupportedStateTransitionException(state);
         }
+    }
+
+    public void setOnline(boolean status) {
+        this.online = status;
     }
 }

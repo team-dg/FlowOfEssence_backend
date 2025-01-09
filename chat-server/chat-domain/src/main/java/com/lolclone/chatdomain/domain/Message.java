@@ -74,32 +74,49 @@ public class Message extends BaseTimeEntity {
         return new Message(chatRoom, null, null, content, MessageType.SYSTEM);
     }
 
-    public static Message createCommandMessage(ChatRoom chatRoom, Member sender, String content) {
-        return new Message(chatRoom, sender, null, content, MessageType.COMMAND);
+    public static Message createWhisperMessage(ChatRoom chatRoom, Member sender, Member recipient, String content) {
+        return new Message(chatRoom, sender, recipient, content, MessageType.WHISPER);
     }
 
     // 비즈니스 메서드
+    /**
+     * 특정 사용자가 메시지를 읽었음을 표시하는 메서드
+     * @param user 메시지를 읽은 사용자
+     */
     public void markAsReadBy(Member user) {
         this.readByUsers.add(user.getId());
     }
 
+    /**
+     * 특정 사용자가 메시지를 읽었는지 확인하는 메서드
+     * @param user 확인할 사용자
+     * @return 메시지를 읽었으면 true, 아니면 false
+     */
     public boolean isReadBy(Member user) {
         return this.readByUsers.contains(user.getId());
     }
 
+    /**
+     * 시스템 메시지인지 확인하는 메서드
+     * @return 시스템 메시지이면 true, 아니면 false
+     */
     public boolean isSystemMessage() {
         return this.messageType == MessageType.SYSTEM;
     }
 
-    public boolean isCommandMessage() {
-        return this.messageType == MessageType.COMMAND;
-    }
-
-    // 귓속말 관련 메서드
+    /**
+     * 귓속말 메시지인지 확인하는 메서드
+     * @return 귓속말 메시지이면 true, 아니면 false
+     */
     public boolean isWhisper() {
         return this.messageType == MessageType.WHISPER;
     }
 
+    /**
+     * 특정 사용자가 메시지의 수신자인지 확인하는 메서드
+     * @param user 확인할 사용자
+     * @return 메시지의 수신자이면 true, 아니면 false
+     */
     public boolean isRecipient(Member user) {
         return this.recipient != null && this.recipient.equals(user);
     }
