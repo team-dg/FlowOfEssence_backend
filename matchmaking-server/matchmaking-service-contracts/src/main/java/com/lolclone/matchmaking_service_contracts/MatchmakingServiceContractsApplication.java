@@ -1,13 +1,13 @@
-package com.lolclone.matchmaking_server;
+package com.lolclone.matchmaking_service_contracts;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MatchmakingServerApplication {
+public class MatchmakingServiceContractsApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MatchmakingServerApplication.class, args);
+		SpringApplication.run(MatchmakingServiceContractsApplication.class, args);
 	}
-	
+
 }

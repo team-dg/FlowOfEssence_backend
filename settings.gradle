@@ -15,10 +15,14 @@ include('chat-server:chat-infra')
 include('chat-server:chat-service-api')
 include('chat-server:chat-service-contracts')
 
+include('matchmaking-server:matchmaking-domain')
+include('matchmaking-server:matchmaking-infra')
+include('matchmaking-server:matchmaking-service-api')
+include('matchmaking-server:matchmaking-service-contracts')
+
+include('logging-monitoring-server')
+include('common-module')
+
 include('api-gateway-server:api-gateway-domain')
 include('api-gateway-server:api-gateway-infra')
 include('api-gateway-server:api-gateway-service-api')
-
-include('matchmaking-server')
-include('logging-monitoring-server')
-include('common-module')
