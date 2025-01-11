@@ -72,7 +72,7 @@ public class FriendService {
      * 차단되지 않은 사용자의 모든 친구 목록 조회
      */
     public List<Friend> getActiveFriends(final Member user) {
-        return friendRepository.findByUserAndBlockedFalseAndBlockedByFalse(user);
+        return friendRepository.findByUserAndIsBlockedFalse(user);
     }
 
     /**

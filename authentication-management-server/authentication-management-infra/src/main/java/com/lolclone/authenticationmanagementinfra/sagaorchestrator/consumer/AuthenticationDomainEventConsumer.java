@@ -1,5 +1,7 @@
 package com.lolclone.authenticationmanagementinfra.sagaorchestrator.consumer;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import com.lolclone.authenticationmanagementinfra.service.application.UserAuthService;
 import com.lolclone.commonmodule.channel.ChannelNames;
 import com.lolclone.userserviceapi.event.MemberCreated;
@@ -20,6 +22,7 @@ public class AuthenticationDomainEventConsumer {
                 .build();
     }
 
+    @Transactional
     private void createMember(DomainEventEnvelope<MemberCreated> memberCreated) {
         
     }

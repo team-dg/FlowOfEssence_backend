@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 )
 public class Friend extends BaseTimeEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "friend_id", columnDefinition = "uuid")
     private UUID id;
 
@@ -46,6 +46,7 @@ public class Friend extends BaseTimeEntity {
     @Column(length = 100)
     private String memo;
 
+    @Column(nullable = false)
     private boolean isBlocked = false;
 
     private Friend(Member user, Member friend) {

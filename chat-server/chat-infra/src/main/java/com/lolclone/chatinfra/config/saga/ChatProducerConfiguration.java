@@ -10,7 +10,7 @@ import io.eventuate.tram.events.publisher.DomainEventPublisher;
 @Configuration
 public class ChatProducerConfiguration {
     @Bean
-    public ChatDomainEventPublisher chatDomainEventPublisher(
+    public ChatDomainEventPublisher chatDomainAggregateEventPublisher(
         DomainEventPublisher eventPublisher
     ) {
         return new ChatDomainEventPublisher(eventPublisher);

@@ -11,14 +11,14 @@ import org.springframework.data.repository.query.Param;
 
 import com.lolclone.chatdomain.domain.Message;
 
-public interface MessageRepository extends JpaRepository<Message, Long>{
+public interface MessageRepository extends JpaRepository<Message, UUID>{
     /**
      * 특정 채팅방의 특정 날짜 범위 내 메시지 조회
      */
     @Query("SELECT m FROM Message m WHERE m.chatRoom.id = :roomId " +
-            "AND m.createdAt BETWEEN :startDateTime AND :endDateTime " +
-            "ORDER BY m.createdAt ASC")
-    List<Message> findByRoomIdAndCreatedAtBetween(
+            "AND m.createdDate BETWEEN :startDateTime AND :endDateTime " +
+            "ORDER BY m.createdDate ASC")
+    List<Message> findByRoomIdAndCreatedDateBetween(
         @Param("roomId") UUID roomId,
         @Param("startDateTime") LocalDateTime startDateTime,
         @Param("endDateTime") LocalDateTime endDateTime
@@ -27,12 +27,12 @@ public interface MessageRepository extends JpaRepository<Message, Long>{
     /**
      * 특정 날짜 이전의 메시지 조회
      */
-    @Query("SELECT m FROM Message m WHERE m.createdAt < :dateTime")
-    List<Message> findByCreatedAtBefore(@Param("dateTime") LocalDateTime dateTime);
+    @Query("SELECT m FROM Message m WHERE m.createdDate < :dateTime")
+    List<Message> findByCreatedDateBefore(@Param("dateTime") LocalDateTime dateTime);
 
-    Optional<Message> findTopByRoomIdOrderByCreatedAtDesc(UUID roomId);
+    Optional<Message> findTopByChatRoomIdOrderByCreatedDateDesc(UUID roomId);
 
-    int deleteByRoomId(UUID roomId);
+    int deleteByChatRoomId(UUID roomId);
 
-    long countByRoomId(UUID roomId);
+    long countByChatRoomId(UUID roomId);
 }

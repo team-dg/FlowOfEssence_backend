@@ -6,7 +6,7 @@ import java.util.UUID;
 import com.lolclone.chatdomain.domain.Message;
 
 public record MessageDto(
-    Long messageId,
+    UUID messageId,
     UUID senderId,
     UUID receiverId,
     String message,

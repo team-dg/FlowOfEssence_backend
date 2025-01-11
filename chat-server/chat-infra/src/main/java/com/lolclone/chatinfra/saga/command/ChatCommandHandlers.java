@@ -5,12 +5,10 @@ import static io.eventuate.tram.commands.consumer.CommandHandlerReplyBuilder.wit
 
 import java.util.UUID;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.lolclone.chatdomain.exception.UnsupportedStateTransitionException;
 import com.lolclone.chatinfra.service.domain.MemberService;
-import com.lolclone.chatserviceapi.command.CreateUserCommand;
-import com.lolclone.chatserviceapi.command.UndoCreateUserCommand;
+import com.lolclone.chatserviceapi.command.CreateUserChatCommand;
+import com.lolclone.chatserviceapi.command.UndoCreateUserChatCommand;
 import com.lolclone.commonmodule.channel.ChannelNames;
 
 import io.eventuate.tram.commands.consumer.CommandHandlers;
@@ -25,14 +23,13 @@ public class ChatCommandHandlers {
 
     public CommandHandlers commandHandlers() {
         return SagaCommandHandlersBuilder
-                .fromChannel(ChannelNames.USER_SERVICE)
-                .onMessage(CreateUserCommand.class, this::CreateUserCommand)
-                .onMessage(UndoCreateUserCommand.class, this::UndoCreateUserCommand)
+                .fromChannel(ChannelNames.CHAT_SERVICE)
+                .onMessage(CreateUserChatCommand.class, this::CreateUserChatCommand)
+                .onMessage(UndoCreateUserChatCommand.class, this::UndoCreateUserChatCommand)
                 .build();
     }
 
-    @Transactional
-    public Message CreateUserCommand(CommandMessage<CreateUserCommand> cm) {
+    public Message CreateUserChatCommand(CommandMessage<CreateUserChatCommand> cm) {
         UUID userId = cm.getCommand().getUserId();
         String nickname = cm.getCommand().getNickname();
         try {
@@ -43,8 +40,7 @@ public class ChatCommandHandlers {
         }
     }
 
-    @Transactional
-    public Message UndoCreateUserCommand(CommandMessage<UndoCreateUserCommand> cm) {
+    public Message UndoCreateUserChatCommand(CommandMessage<UndoCreateUserChatCommand> cm) {
         UUID userId = cm.getCommand().getUserId();
         memberService.undoCreateMember(userId);
         return withSuccess();

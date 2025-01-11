@@ -33,6 +33,7 @@ import com.lolclone.chatinfra.service.domain.FriendService;
 import com.lolclone.chatinfra.service.domain.MemberService;
 import com.lolclone.chatinfra.service.domain.MessageService;
 import com.lolclone.chatserviceapi.dto.FriendChatInfoDto;
+import com.lolclone.chatserviceapi.dto.UserSearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -490,7 +491,7 @@ public class ChatService {
      * @param newFolderName 새로운 폴더 이름
      */
     @Transactional
-    public void updateFriendFolderName(final UUID userId, final Long folderId, final String newFolderName) {
+    public void updateFriendFolderName(final UUID userId, final UUID folderId, final String newFolderName) {
         Member user = memberService.getOrThrow(userId);
         // 폴더 소유자 확인
         if (!friendFolderService.isOwner(folderId, user)) {
@@ -505,7 +506,7 @@ public class ChatService {
      * @param folderId 폴더 ID
      */
     @Transactional
-    public void deleteFriendFolder(final UUID userId, final Long folderId) {
+    public void deleteFriendFolder(final UUID userId, final UUID folderId) {
         Member user = memberService.getOrThrow(userId);
         // 폴더 소유자 확인
         if (!friendFolderService.isOwner(folderId, user)) {
@@ -522,7 +523,7 @@ public class ChatService {
      * @param friendInFolderId 폴더 내 친구 ID
      */
     @Transactional
-    public void unmanageFriendFromFolder(final UUID userId, final Long friendInFolderId) {
+    public void unmanageFriendFromFolder(final UUID userId, final UUID friendInFolderId) {
         Member user = memberService.getOrThrow(userId);
         FriendInFolder friendInFolder = friendInFolderService.getOrThrow(friendInFolderId);
 
@@ -537,5 +538,35 @@ public class ChatService {
 
     // 여기까지 친구 폴더 만들기 기능
 
-    
+    /**
+     * 닉네임으로 사용자 검색
+     */
+    public List<UserSearchResponseDto> searchUsersByNickname(final UUID userId, final String nickname) {
+        memberService.getOrThrow(userId);
+
+        // 닉네임으로 사용자 검색 (자신 제외)
+        List<Member> users = memberService.searchByNickname(nickname, userId);
+        
+        // // 현재 사용자의 친구 목록 조회
+        // Set<UUID> friendIds = friendService.getFriends(currentUser).stream()
+        //     .map(friend -> friend.getFriend().getId())
+        //     .collect(Collectors.toSet());
+        
+        // // 차단한 사용자 목록 조회
+        // Set<UUID> blockedIds = friendService.getBlockedFriends(currentUser).stream()
+        //     .map(friend -> friend.getFriend().getId())
+        //     .collect(Collectors.toSet());
+            
+        // // 친구 요청 보낸 목록 조회
+        // Set<UUID> pendingRequestIds = friendRequestService.getPendingRequestsByRequester(currentUser).stream()
+        //     .map(request -> request.getReceiver().getId())
+        //     .collect(Collectors.toSet());
+
+        return users.stream()
+            .map(user -> new UserSearchResponseDto(
+                user.getId(),
+                user.getNickname()
+            ))
+            .collect(Collectors.toList());
+    }
 }

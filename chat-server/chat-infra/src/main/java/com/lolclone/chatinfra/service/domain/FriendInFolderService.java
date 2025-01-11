@@ -1,6 +1,7 @@
 package com.lolclone.chatinfra.service.domain;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FriendInFolderService {
     private final FriendInFolderRepository friendInFolderRepository;
 
-    public FriendInFolder getOrThrow(final Long id) {
+    public FriendInFolder getOrThrow(final UUID id) {
         return friendInFolderRepository.findById(id).orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_IN_FOLDER_NOT_FOUND));
     }
 
@@ -40,7 +41,7 @@ public class FriendInFolderService {
      * 폴더에서 친구 제거
      */
     @Transactional(propagation = Propagation.MANDATORY)
-    public void removeFriendFromFolder(final Long friendInFolderId) {
+    public void removeFriendFromFolder(final UUID friendInFolderId) {
         FriendInFolder friendInFolder = getOrThrow(friendInFolderId);
         friendInFolderRepository.delete(friendInFolder);
     }

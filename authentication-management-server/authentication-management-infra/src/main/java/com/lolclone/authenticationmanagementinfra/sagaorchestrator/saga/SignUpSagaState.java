@@ -7,6 +7,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.lolclone.authenticationmanagementserviceapi.command.CreateSignUpUserCommand;
 import com.lolclone.authenticationmanagementserviceapi.command.UndoCreateSignUpUserCommand;
+import com.lolclone.chatserviceapi.command.CreateUserChatCommand;
+import com.lolclone.chatserviceapi.command.UndoCreateUserChatCommand;
 import com.lolclone.userserviceapi.command.CreateUserCommand;
 import com.lolclone.userserviceapi.command.UndoCreateUserCommand;
 
@@ -45,6 +47,14 @@ public class SignUpSagaState {
 
     public UndoCreateUserCommand makeUndoCreateUserCommand() {
         return new UndoCreateUserCommand(getUserId());
+    }
+
+    public CreateUserChatCommand makeCreateUserChatCommand() {
+        return new CreateUserChatCommand(getUserId(), getNickname());
+    }
+
+    public UndoCreateUserChatCommand makeUndoCreateUserChatCommand() {
+        return new UndoCreateUserChatCommand(getUserId());
     }
 
     public CreateSignUpUserCommand makeCreateSignUpUserCommand() {

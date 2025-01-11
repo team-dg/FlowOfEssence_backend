@@ -1,5 +1,7 @@
 package com.lolclone.chatdomain.domain;
 
+import java.util.UUID;
+
 import com.lolclone.chatdomain.common.BaseTimeEntity;
 
 import jakarta.persistence.*;
@@ -24,9 +26,9 @@ import lombok.NoArgsConstructor;
 )
 public class FriendInFolder extends BaseTimeEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "friend_in_folder_id")
-    private Long id;
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "folder_id", nullable = false, columnDefinition = "uuid")

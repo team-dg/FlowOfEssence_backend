@@ -26,10 +26,9 @@ import java.util.HashSet;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-    name = "users", indexes = {
-            @Index(name = "idx_nickname", columnList = "nickname"),
-            @Index(name = "idx_nickname_tag", columnList = "nickname,tag"),
-            @Index(name = "idx_nickname_tag_status", columnList = "nickname,tag,status")
+    name = "users", 
+    indexes = {
+        @Index(name = "idx_nickname", columnList = "nickname")
     }
 )
 public class Member extends BaseEntity {
@@ -47,7 +46,12 @@ public class Member extends BaseEntity {
     private MemberStatus status = MemberStatus.OFFLINE;
 
     @ElementCollection
-    @CollectionTable(name = "member_tags")
+    @CollectionTable(
+        name = "member_tags", 
+        joinColumns = @JoinColumn(name = "member_id"), 
+        indexes = @Index(name = "idx_member_tags", columnList = "tag")
+    )
+    @Column(name = "tag")
     private Set<String> tags = new HashSet<>();
 
     @Column(length = 30)
@@ -58,7 +62,7 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberState state;
+    private MemberState state = MemberState.PENDING;
 
     @Enumerated(EnumType.STRING)
     private MemberState previousState;

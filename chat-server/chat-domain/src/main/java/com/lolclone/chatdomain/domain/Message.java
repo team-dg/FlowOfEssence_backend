@@ -23,20 +23,20 @@ import lombok.NoArgsConstructor;
 @Table(name = "messages")
 public class Message extends BaseTimeEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "message_id")
-    private Long id;
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "sender_id", columnDefinition = "uuid")
+    @JoinColumn(name = "sender_id", nullable = false, columnDefinition = "uuid")
     private Member sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id", nullable = false)
+    @JoinColumn(name = "recipient_id", nullable = false, columnDefinition = "uuid")
     private Member recipient;
 
     @Column(nullable = false, length = 500)

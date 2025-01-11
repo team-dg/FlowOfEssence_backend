@@ -74,7 +74,8 @@ public class OAuth2AuthenticationFacade {
                         loginResult.refreshToken().toString(),
                         loginResult.refreshTokenExpiredAt()
                 ),
-                loginResult.userId()
+                loginResult.userId(),
+                loginResult.nickname()
         );
     }
 

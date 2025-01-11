@@ -13,6 +13,5 @@ public interface FriendRepository extends JpaRepository<Friend, UUID>{
     List<Friend> findByUser(Member user);
     List<Friend> findByUserAndIsBlockedTrue(Member user);
     Optional<Friend> findByUserAndFriend(Member user, Member friend);
-    List<Friend> findByUserAndBlockedFalseAndBlockedByFalse(Member user);
     List<Friend> findByUserAndIsBlockedFalse(Member user);
 }

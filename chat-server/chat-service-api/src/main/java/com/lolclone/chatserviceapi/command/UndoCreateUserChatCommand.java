@@ -9,11 +9,8 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public class CreateUserCommand extends ChatCommand {
-    private String nickname;
-
-    public CreateUserCommand(UUID userId, String nickname) {
+public class UndoCreateUserChatCommand extends ChatCommand {
+    public UndoCreateUserChatCommand(UUID userId) {
         super(userId);
-        this.nickname = nickname;
     }
 }

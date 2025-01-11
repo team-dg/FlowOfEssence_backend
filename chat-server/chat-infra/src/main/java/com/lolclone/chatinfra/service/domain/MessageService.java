@@ -29,7 +29,7 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final MessageHandler messageHandler;
 
-    public Message getOrThrow(final Long id) {
+    public Message getOrThrow(final UUID id) {
         return messageRepository.findById(id).orElseThrow(() -> new NotFoundException(ExceptionType.MESSAGE_NOT_FOUND));
     }
 
@@ -39,7 +39,7 @@ public class MessageService {
      * @param user 확인할 사용자
      * @return 사용자가 메시지를 읽었으면 true, 아니면 false
      */
-    public boolean isMessageReadBy(final Long messageId, final Member user) {
+    public boolean isMessageReadBy(final UUID messageId, final Member user) {
         Message message = getOrThrow(messageId);
         return message.isReadBy(user);
     }
@@ -49,7 +49,7 @@ public class MessageService {
      * @param messageId 확인할 메시지 ID
      * @return 메시지가 시스템 메시지이면 true, 아니면 false
      */
-    public boolean isSystemMessage(final Long messageId) {
+    public boolean isSystemMessage(final UUID messageId) {
         Message message = getOrThrow(messageId);
         return message.isSystemMessage();
     }
@@ -59,7 +59,7 @@ public class MessageService {
      * @param messageId 확인할 메시지 ID
      * @return 메시지가 귓속말 메시지이면 true, 아니면 false
      */
-    public boolean isWhisperMessage(final Long messageId) {
+    public boolean isWhisperMessage(final UUID messageId) {
         Message message = getOrThrow(messageId);
         return message.isWhisper();
     }
@@ -70,7 +70,7 @@ public class MessageService {
      * @param user 확인할 사용자
      * @return 사용자가 메시지의 수신자이면 true, 아니면 false
      */
-    public boolean isRecipient(final Long messageId, final Member user) {
+    public boolean isRecipient(final UUID messageId, final Member user) {
         Message message = getOrThrow(messageId);
         return message.isRecipient(user);
     }
@@ -82,7 +82,7 @@ public class MessageService {
      * @param user 확인할 사용자
      * @return 사용자가 메시지에 접근할 수 있으면 true, 아니면 false
      */
-    public boolean canAccessMessage(final Long messageId, final Member user) {
+    public boolean canAccessMessage(final UUID messageId, final Member user) {
         Message message = getOrThrow(messageId);
         if (message.isWhisper()) {
             return message.getSender().equals(user) || message.isRecipient(user);
@@ -107,7 +107,7 @@ public class MessageService {
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
-    public void markMessageAsRead(final Long messageId, final Member user) {
+    public void markMessageAsRead(final UUID messageId, final Member user) {
         Message message = getOrThrow(messageId);
         message.markAsReadBy(user);
         // 메시지 읽음 처리 이벤트 발행 (필요한 경우)
@@ -125,7 +125,7 @@ public class MessageService {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(23, 59, 59);
         
-        List<Message> messages = messageRepository.findByRoomIdAndCreatedAtBetween(roomId, startOfDay, endOfDay);
+        List<Message> messages = messageRepository.findByRoomIdAndCreatedDateBetween(roomId, startOfDay, endOfDay);
         
         log.info("날짜별 채팅 메시지 조회 완료: roomId={}, date={}, messageCount={}", roomId, date, messages.size());
         
@@ -140,7 +140,7 @@ public class MessageService {
     public List<Message> getMessagesBeforeDate(final LocalDateTime dateTime) {
         log.info("특정 날짜 이전 메시지 조회: dateTime={}", dateTime);
         
-        List<Message> messages = messageRepository.findByCreatedAtBefore(dateTime);
+        List<Message> messages = messageRepository.findByCreatedDateBefore(dateTime);
         
         log.info("특정 날짜 이전 메시지 조회 완료: dateTime={}, messageCount={}", 
         dateTime, messages.size());
@@ -153,7 +153,7 @@ public class MessageService {
      * @param messageId 삭제할 메시지 ID
      */
     @Transactional(propagation = Propagation.MANDATORY)
-    public void deleteMessage(final Long messageId) {
+    public void deleteMessage(final UUID messageId) {
         log.info("메시지 삭제: messageId={}", messageId);
         messageRepository.deleteById(messageId);
         log.info("메시지 삭제 완료: messageId={}", messageId);
@@ -163,7 +163,7 @@ public class MessageService {
      * 채팅방의 마지막 메시지 조회
      */
     public Message getLastMessage(final UUID roomId) {
-        return messageRepository.findTopByRoomIdOrderByCreatedAtDesc(roomId).orElse(null);
+        return messageRepository.findTopByChatRoomIdOrderByCreatedDateDesc(roomId).orElse(null);
     }
 
     /**
@@ -172,13 +172,13 @@ public class MessageService {
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public int deleteAllMessages(final UUID roomId) {
-        return messageRepository.deleteByRoomId(roomId);
+        return messageRepository.deleteByChatRoomId(roomId);
     }
 
     /**
      * 채팅방의 전체 메시지 수 조회
      */
     public long getMessageCount(UUID roomId) {
-        return messageRepository.countByRoomId(roomId);
+        return messageRepository.countByChatRoomId(roomId);
     }
 }

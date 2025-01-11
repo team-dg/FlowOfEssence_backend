@@ -10,7 +10,7 @@ spring:
       hibernate:
         format_sql: true
         highlight_sql: true
-        hbm2ddl.auto: create
+        hbm2ddl.auto: update
         default_batch_fetch_size: 100
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
@@ -39,9 +39,6 @@ eventuate:
     saga:
       participant:
         enabled: true
-      subscriber:
-        id: com.lolclone.authenticationmanagementinfra.sagaorchestrator.saga.SignUpSaga-consumer
-        group-id: com.lolclone.authenticationmanagementinfra.sagaorchestrator.saga.SignUpSaga-consumer
     messaging:
       enabled: true
       producer:
@@ -82,6 +79,8 @@ eventuate:
       properties:
         security.protocol: PLAINTEXT
     events:
+      publisher:
+        enabled: true
       subscriber:
         enabled: true
         id: chatService

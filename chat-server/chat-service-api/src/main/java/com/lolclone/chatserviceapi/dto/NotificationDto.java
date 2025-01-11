@@ -29,11 +29,11 @@ public record NotificationDto(
         this.createdAt = createdAt;
     }
 
-    public static NotificationDto from(Notification notification) {
+    public static NotificationDto from(Notification notification, String message) {
         return NotificationDto.builder()
                 .id(notification.getId())
                 .type(notification.getType())
-                .message(notification.getContent())
+                .message(message)
                 .senderId(notification.getSender().getId())
                 .senderNickname(notification.getSender().getNickname())
                 .createdAt(notification.getCreatedDate())

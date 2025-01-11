@@ -1,6 +1,7 @@
 package com.lolclone.chatinfra.service.domain;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FriendFolderService {
     private final FriendFolderRepository friendFolderRepository;
 
-    public FriendFolder getOrThrow(final Long id) {
+    public FriendFolder getOrThrow(final UUID id) {
         return friendFolderRepository.findById(id).orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_FOLDER_NOT_FOUND));
     }
 
@@ -39,7 +40,7 @@ public class FriendFolderService {
      * 친구 폴더 이름 수정
      */
     @Transactional(propagation = Propagation.MANDATORY)
-    public void updateFolderName(final Long folderId, final String newFolderName) {
+    public void updateFolderName(final UUID folderId, final String newFolderName) {
         FriendFolder folder = getOrThrow(folderId);
         folder.updateFolderName(newFolderName);
     }
@@ -54,7 +55,7 @@ public class FriendFolderService {
     /**
      * 폴더 소유자 확인
      */
-    public boolean isOwner(final Long folderId, final Member user) {
+    public boolean isOwner(final UUID folderId, final Member user) {
         FriendFolder folder = getOrThrow(folderId);
         return folder.getUser().equals(user);
     }
@@ -63,7 +64,7 @@ public class FriendFolderService {
      * 폴더 삭제
      */
     @Transactional(propagation = Propagation.MANDATORY)
-    public void deleteFolder(final Long folderId) {
+    public void deleteFolder(final UUID folderId) {
         FriendFolder folder = getOrThrow(folderId);
         friendFolderRepository.delete(folder);
     }

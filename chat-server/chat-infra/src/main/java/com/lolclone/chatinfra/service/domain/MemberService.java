@@ -73,7 +73,14 @@ public class MemberService {
         return memberRepository.findById(id).orElseGet(() -> memberRepository.save(member));
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    /**
+     * 닉네임으로 사용자 검색 (특정 사용자 제외)
+     */
+    public List<Member> searchByNickname(final String nickname, final UUID excludeUserId) {
+        return memberRepository.findByNicknameContainingAndIdNot(nickname, excludeUserId);
+    }
+
+    @Transactional
     public void createMember(final UUID id, final String nickname) {
         Member member = Member.of(id, nickname);
         Member savedMember = findByIdAndCreateMember(id, member);
@@ -81,7 +88,7 @@ public class MemberService {
         domainEventPublisher.publish(savedMember, events);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional
     public void undoCreateMember(final UUID id) {
         memberRepository.findById(id)
             .ifPresent(member -> {

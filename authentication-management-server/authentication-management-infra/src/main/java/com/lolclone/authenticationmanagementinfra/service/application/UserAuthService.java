@@ -41,7 +41,7 @@ public class UserAuthService {
         JwtRefreshToken jwtRefreshToken = tokenManagementService.saveRefreshToken(savedMember.getId());
         SignUpSagaState data = new SignUpSagaState(savedMember.getId(), savedMember.getNickname(), jwtRefreshToken.getId());
         signUpSagaManager.create(data, Member.class, savedMember.getId());
-        return new LoginResult(savedMember.getId(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
+        return new LoginResult(savedMember.getId(), savedMember.getNickname(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
@@ -49,7 +49,7 @@ public class UserAuthService {
         Member member = memberService.findMemberByUsername(loginRequest.username()).orElseThrow(() -> new UnauthorizedException(ExceptionType.INVALID_CREDENTIALS));
         memberService.verifyPassword(member, loginRequest.password());
         JwtRefreshToken jwtRefreshToken = tokenManagementService.saveRefreshToken(member.getId());
-        return new LoginResult(member.getId(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
+        return new LoginResult(member.getId(), member.getNickname(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
@@ -58,7 +58,7 @@ public class UserAuthService {
         JwtRefreshToken jwtRefreshToken = tokenManagementService.saveRefreshToken(savedMember.getId());
         SignUpSagaState data = new SignUpSagaState(savedMember.getId(), savedMember.getNickname(), jwtRefreshToken.getId());
         signUpSagaManager.create(data, Member.class, savedMember.getId());
-        return new LoginResult(savedMember.getId(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
+        return new LoginResult(savedMember.getId(), savedMember.getNickname(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
