@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lolclone.chatdomain.domain.Member;
 import com.lolclone.chatdomain.domain.Report;
 import com.lolclone.chatdomain.domain.ReportReason;
 import com.lolclone.chatdomain.domain.ReportStatus;
+import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.repository.ReportRepository;
 import com.lolclone.chatinfra.exception.commonexception.BadRequestException;
 import com.lolclone.chatinfra.exception.commonexception.NotFoundException;

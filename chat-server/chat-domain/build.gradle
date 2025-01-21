@@ -7,8 +7,18 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
+def generated = 'src/main/generated'
+
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+sourceSets {
+    main.java.srcDirs += [ generated ]
+}
+
 clean {
-    delete file('src/main/generated')
+    delete file(generated)
 }
 
 test {

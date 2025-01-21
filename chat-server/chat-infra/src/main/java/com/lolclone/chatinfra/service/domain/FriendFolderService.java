@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lolclone.chatdomain.domain.FriendFolder;
-import com.lolclone.chatdomain.domain.Member;
+import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.repository.FriendFolderRepository;
 import com.lolclone.chatinfra.exception.commonexception.NotFoundException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;

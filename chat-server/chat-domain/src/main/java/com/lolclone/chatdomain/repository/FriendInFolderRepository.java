@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.lolclone.chatdomain.domain.Friend;
 import com.lolclone.chatdomain.domain.FriendFolder;
 import com.lolclone.chatdomain.domain.FriendInFolder;
+import com.lolclone.chatdomain.domain.friend.Friend;
 
 public interface FriendInFolderRepository extends JpaRepository<FriendInFolder, UUID> {
     List<FriendInFolder> findByFolder(FriendFolder folder);

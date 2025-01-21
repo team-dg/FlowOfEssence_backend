@@ -3,22 +3,20 @@ package com.lolclone.chatserviceapi.dto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.lolclone.chatdomain.domain.Message;
+import com.lolclone.chatdomain.domain.message.Message;
 
 public record MessageDto(
-    UUID messageId,
+    Long messageId,
     UUID senderId,
-    UUID receiverId,
     String message,
     LocalDateTime sentAt
 ) {
-    public static MessageDto from(final Message message) {
-        return new MessageDto(
-            message.getId(),
-            message.getSender().getId(),
-            message.getRecipient().getId(),
-            message.getContent(),
-            message.getSentAt()
-        );
-    }
+    // public static MessageDto from(final Message message) {
+    //     return new MessageDto(
+    //         message.getId().getValue(),
+    //         message.getSender().getId().getValue(),
+    //         message.getContent().getValue(),
+    //         message.getCreatedDate()
+    //     );
+    // }
 }

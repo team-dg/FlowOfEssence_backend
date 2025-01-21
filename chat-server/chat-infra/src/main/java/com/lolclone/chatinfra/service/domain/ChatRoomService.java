@@ -1,16 +1,17 @@
 package com.lolclone.chatinfra.service.domain;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lolclone.chatdomain.domain.ChatRoom;
-import com.lolclone.chatdomain.domain.Member;
-import com.lolclone.chatdomain.domain.Message;
+import com.lolclone.chatdomain.domain.chatroom.ChatRoom;
+import com.lolclone.chatdomain.domain.chatroom.ChatRoomId;
+import com.lolclone.chatdomain.domain.member.Member;
+import com.lolclone.chatdomain.domain.member.MemberId;
+import com.lolclone.chatdomain.exception.UnauthorizedParticipantException;
 import com.lolclone.chatdomain.repository.ChatRoomRepository;
+import com.lolclone.chatdomain.repository.MemberRepository;
 import com.lolclone.chatinfra.exception.commonexception.NotFoundException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;
 
@@ -22,124 +23,101 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Transactional(readOnly = true)
 public class ChatRoomService {
-    private final ChatParticipantService chatParticipantService;
     private final ChatRoomRepository chatRoomRepository;
-
-    public ChatRoom getOrThrow(final UUID id) {
-        return chatRoomRepository.findById(id).orElseThrow(() -> new NotFoundException(ExceptionType.CHAT_ROOM_NOT_FOUND));
-    }
+    private final MemberRepository memberRepository;
 
     /**
-     * 개인 채팅방 생성
+     * 1:1 채팅방 생성 또는 조회
+     * 이미 존재하는 1:1 채팅방이 있다면 해당 채팅방을 반환하고,
+     * 없다면 새로운 채팅방을 생성합니다.
      */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public ChatRoom createPersonalRoom(final Member creator) {
-        ChatRoom chatRoom = ChatRoom.createPersonalRoom(creator);
-        return chatRoomRepository.save(chatRoom);
+    public ChatRoom getOrCreatePersonalRoom(MemberId userId, MemberId targetId) {
+        Member user = findMemberOrThrow(userId);
+        Member target = findMemberOrThrow(targetId);
+
+        return chatRoomRepository.findPersonalRoomByParticipants(userId, targetId)
+                .orElseGet(() -> {
+                    ChatRoom newRoom = ChatRoom.createPersonalRoom(user, target);
+                    ChatRoom savedRoom = chatRoomRepository.save(newRoom);
+                    //eventPublisher.publish(new PersonalChatRoomCreatedEvent(savedRoom.getId(), userId, targetId));
+                    return savedRoom;
+                });
     }
 
     /**
      * 그룹 채팅방 생성
      */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public ChatRoom createGroupRoom(final Member creator) {
-        ChatRoom chatRoom = ChatRoom.createGroupRoom(creator);
-        return chatRoomRepository.save(chatRoom);
+    public ChatRoom createGroupRoom(MemberId creatorId, String name, List<MemberId> participantIds) {
+        Member creator = findMemberOrThrow(creatorId);
+        List<Member> participants = findParticipants(participantIds);
+
+        ChatRoom groupRoom = ChatRoom.createGroupRoom(creator, name);
+        participants.forEach(groupRoom::addParticipant);
+
+        ChatRoom savedRoom = chatRoomRepository.save(groupRoom);
+        //eventPublisher.publish(new GroupChatRoomCreatedEvent(savedRoom.getId(), creatorId, participantIds));
+
+        return savedRoom;
     }
 
     /**
-     * 채팅방에 참여자 추가
+     * 채팅방 참여자 추가
      */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void addParticipant(final UUID roomId, final Member member) {
-        ChatRoom chatRoom = getOrThrow(roomId);
-        chatRoom.addParticipant(member);
+    public void addParticipant(ChatRoomId roomId, MemberId userId, MemberId targetId) {
+        ChatRoom chatRoom = findChatRoomOrThrow(roomId);
+        Member user = findMemberOrThrow(userId);
+        Member target = findMemberOrThrow(targetId);
+
+        validateRoomParticipant(chatRoom, user);
+        chatRoom.addParticipant(target);
+
+        chatRoomRepository.save(chatRoom);
+        //eventPublisher.publish(new ParticipantAddedEvent(roomId, targetId, userId));
     }
 
     /**
-     * 채팅방에서 참여자 제거
+     * 채팅방 나가기
      */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void removeParticipant(final UUID roomId, final Member member) {
-        ChatRoom chatRoom = getOrThrow(roomId);
-        chatRoom.removeParticipant(member);
+    public void leaveRoom(ChatRoomId roomId, MemberId userId) {
+        ChatRoom chatRoom = findChatRoomOrThrow(roomId);
+        Member user = findMemberOrThrow(userId);
+
+        chatRoom.removeParticipant(user);
+
+        chatRoomRepository.save(chatRoom);
+        //eventPublisher.publish(new ParticipantLeftEvent(roomId, userId));
     }
 
     /**
-     * 채팅방의 마지막 메시지 업데이트
+     * 채팅방 메시지 전체 삭제
      */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void updateLastMessage(final UUID roomId, final Message message) {
-        ChatRoom chatRoom = getOrThrow(roomId);
-        chatRoom.updateLastMessage(message);
+    public void clearMessages(ChatRoomId roomId, MemberId userId) {
+        ChatRoom chatRoom = findChatRoomOrThrow(roomId);
+        Member user = findMemberOrThrow(userId);
+
+        chatRoom.clearMessages(user);
+
+        chatRoomRepository.save(chatRoom);
+        //eventPublisher.publish(new ChatRoomClearedEvent(roomId, userId));
     }
 
-    /**
-     * 채팅방 비활성화
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void deactivateRoom(final UUID roomId) {
-        ChatRoom chatRoom = getOrThrow(roomId);
-        chatRoom.deactivate();
+    private ChatRoom findChatRoomOrThrow(ChatRoomId roomId) {
+        return chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new NotFoundException(ExceptionType.CHAT_ROOM_NOT_FOUND));
     }
 
-    /**
-     * 채팅방이 1대1 채팅방인지 확인
-     * @param roomId 채팅방 ID
-     * @return 1대1 채팅방이면 true, 아니면 false
-     */
-    public boolean isPersonalRoom(final UUID roomId) {
-        ChatRoom chatRoom = getOrThrow(roomId);
-        return chatRoom.isPersonal();
+    private Member findMemberOrThrow(MemberId memberId) {
+        return memberRepository.findById(memberId)
+            .orElseThrow(() -> new NotFoundException(ExceptionType.MEMBER_NOT_FOUND));
     }
 
-    /**
-     * 채팅방 타입 확인 (그룹)
-     */
-    public boolean isGroupRoom(final UUID roomId) {
-        ChatRoom chatRoom = getOrThrow(roomId);
-        return chatRoom.isGroup();
+    private List<Member> findParticipants(List<MemberId> participantIds) {
+        return memberRepository.findAllById(participantIds);
     }
 
-    /**
-     * 특정 사용자가 채팅방 참여자인지 확인
-     */
-    public boolean hasParticipant(final UUID roomId, final Member member) {
-        ChatRoom chatRoom = getOrThrow(roomId);
-        return chatRoom.hasParticipant(member);
-    }
-
-    /**
-     * 두 사용자가 참여중인 1 대1 채팅방 조회
-     * @param user1 조회할 사용자
-     * @param user2 조회할 사용자
-     * @return 사용자가 참여중인 채팅방 목록
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public ChatRoom getPersonalRoom(final Member user1, final Member user2) {
-        return chatRoomRepository.findPersonalRoomByParticipants(user1, user2)
-                .orElseGet(() -> {
-                    ChatRoom newRoom = this.createPersonalRoom(user1);
-                    chatParticipantService.createChatParticipant(newRoom, user2);
-                    return newRoom;
-                });
-    }
-
-    /**
-     * 두 사용자 간의 기존 1:1 채팅방을 조회합니다.
-     * 
-     * @return 존재하는 채팅방 또는 Optional.empty()
-     */
-    public Optional<ChatRoom> findPersonalRoom(final Member user1, final Member user2) {
-        return chatRoomRepository.findPersonalRoomByParticipants(user1, user2);
-    }
-
-    /**
-     * 채팅방의 마지막 메시지 초기화
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void clearLastMessage(final UUID roomId) {
-        ChatRoom chatRoom = getOrThrow(roomId);
-        chatRoom.clearLastMessage();
+    private void validateRoomParticipant(ChatRoom chatRoom, Member user) {
+        if (!chatRoom.hasParticipant(user)) {
+        throw new UnauthorizedParticipantException(user.getId(), chatRoom.getId());
+        }
     }
 }

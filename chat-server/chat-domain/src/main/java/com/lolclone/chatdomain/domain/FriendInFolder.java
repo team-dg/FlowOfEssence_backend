@@ -3,6 +3,7 @@ package com.lolclone.chatdomain.domain;
 import java.util.UUID;
 
 import com.lolclone.chatdomain.common.BaseTimeEntity;
+import com.lolclone.chatdomain.domain.friend.Friend;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

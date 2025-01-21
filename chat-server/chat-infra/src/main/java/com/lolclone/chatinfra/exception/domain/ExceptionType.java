@@ -35,6 +35,10 @@ public enum ExceptionType {
     RECIPIENT_IN_GAME(HttpStatus.BAD_REQUEST, "E023", "수신자가 게임 중입니다."),
     SEARCH_KEYWORD_REQUIRED(HttpStatus.BAD_REQUEST, "E024", "검색어가 필요합니다."),
     NOT_FOLDER_OWNER(HttpStatus.BAD_REQUEST, "E025", "폴더 소유자가 아닙니다."),
+    MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "E026", "존재하지 않는 사용자입니다."),
+    GAME_INVITE_NOT_FOUND(HttpStatus.BAD_REQUEST, "E027", "존재하지 않는 게임 초대입니다."),
+    GAME_INVITE_ALREADY_SENT(HttpStatus.BAD_REQUEST, "E028", "이미 게임 초대가 존재합니다."),
+    CHATROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "E029", "존재하지 않는 채팅방입니다."),
 
     //500
     EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "E003", "예상치 못한 오류가 발생했습니다."),

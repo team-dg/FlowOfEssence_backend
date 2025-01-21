@@ -1,12 +1,10 @@
 package com.lolclone.chatdomain.repository;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.lolclone.chatdomain.domain.Member;
+import com.lolclone.chatdomain.domain.member.Member;
+import com.lolclone.chatdomain.domain.member.MemberId;
 
-public interface MemberRepository extends JpaRepository<Member, UUID>{
-    List<Member> findByNicknameContainingAndIdNot(String nickname, UUID excludeUserId);
+public interface MemberRepository extends JpaRepository<Member, MemberId>{
+    //List<Member> findByNicknameContainingAndIdNot(String nickname, UUID excludeUserId);
 }

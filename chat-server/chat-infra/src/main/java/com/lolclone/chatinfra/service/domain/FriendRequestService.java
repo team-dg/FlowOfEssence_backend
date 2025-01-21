@@ -1,19 +1,24 @@
 package com.lolclone.chatinfra.service.domain;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lolclone.chatdomain.domain.Friend;
-import com.lolclone.chatdomain.domain.FriendRequest;
-import com.lolclone.chatdomain.domain.FriendStatus;
-import com.lolclone.chatdomain.domain.Member;
+import com.lolclone.chatdomain.domain.friend.Friend;
+import com.lolclone.chatdomain.domain.friendrequest.FriendRequest;
+import com.lolclone.chatdomain.domain.friendrequest.FriendRequestId;
+import com.lolclone.chatdomain.domain.member.Member;
+import com.lolclone.chatdomain.domain.member.MemberId;
+import com.lolclone.chatdomain.exception.UnauthorizedFriendRequestException;
 import com.lolclone.chatdomain.repository.FriendRequestRepository;
+import com.lolclone.chatdomain.repository.MemberRepository;
+import com.lolclone.chatdomain.repository.friend.FriendRepository;
 import com.lolclone.chatinfra.exception.commonexception.BadRequestException;
 import com.lolclone.chatinfra.exception.commonexception.NotFoundException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;
+import com.lolclone.chatserviceapi.dto.FriendRequestResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,115 +29,108 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
-    private final NotificationService notificationService;
-    private final FriendService friendService;
+    private final MemberRepository memberRepository;
+    private final FriendRepository friendRepository;
 
-    public FriendRequest getOrThrow(final Long id) {
-        return friendRequestRepository.findById(id).orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_REQUEST_NOT_FOUND));
-    }
+    // /**
+    //  * 친구 요청을 생성합니다.
+    //  */
+    // public FriendRequestId createFriendRequest(MemberId requesterId, MemberId receiverId) {
+    //     Member requester = findMemberById(requesterId);
+    //     Member receiver = findMemberById(receiverId);
 
-    /**
-     * 친구 요청 생성
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public FriendRequest createFriendRequest(final Member requester, final Member receiver) {
-        validateNotAlreadyRequested(requester, receiver);
-        FriendRequest request = FriendRequest.create(requester, receiver);
-        notificationService.sendFriendRequestNotification(request);
-        return friendRequestRepository.save(request);
-    }
+    //     validateFriendRequestCreation(requester, receiver);
 
-    /**
-     * 친구 요청 수락
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public Friend acceptFriendRequest(final Long requestId) {
-        FriendRequest request = getOrThrow(requestId);
-        // 친구 관계 생성
-        Friend friendShip = friendService.createFriendship(request.getRequester(), request.getReceiver());
-        request.accept();
-        notificationService.sendFriendRequestAcceptedNotification(request);
-        return friendShip;
-    }
+    //     FriendRequest friendRequest = FriendRequest.create(requester, receiver);
+    //     FriendRequest savedRequest = friendRequestRepository.save(friendRequest);
 
-    /**
-     * 친구 요청 거절
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void rejectFriendRequest(final Long requestId) {
-        FriendRequest request = getOrThrow(requestId);
-        request.reject();
-        notificationService.sendFriendRequestRejectedNotification(request);
-    }
+    //     // eventPublisher.publish(new FriendRequestCreatedEvent(
+    //     //         savedRequest.getId(),
+    //     //         requesterId,
+    //     //         receiverId));
 
-    /**
-     * 게임 초대 요청 생성
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public FriendRequest createGameInviteRequest(final Member requester, final Member receiver) {
-        FriendRequest request = FriendRequest.create(requester, receiver);
-        notificationService.sendGameInviteNotification(request);
-        return friendRequestRepository.save(request);
-    }
+    //     return savedRequest.getId();
+    // }
 
-    /**
-     * 게임 초대 요청 수락
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public Friend acceptGameInviteRequest(final Long requestId) {
-        FriendRequest request = getOrThrow(requestId);
-        // TODO: 게임 방 참가 로직 작성
-        request.acceptGameInvite();
-        notificationService.sendGameInviteAcceptedNotification(request);
-        return null;
-    }
+    // /**
+    //  * 친구 요청을 수락합니다.
+    //  */
+    // public void acceptFriendRequest(MemberId receiverId, FriendRequestId requestId) {
+    //     FriendRequest request = findFriendRequestById(requestId);
+    //     Member receiver = findMemberById(receiverId);
 
-    /**
-     * 게임 초대 요청 거절
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void rejectGameInviteRequest(final Long requestId) {
-        FriendRequest request = getOrThrow(requestId);
-        request.rejectGameInvite();
-        notificationService.sendGameInviteRejectedNotification(request);
-    }
+    //     validateFriendRequestAcceptance(request, receiver);
 
-    /**
-     * 받은 친구 요청 목록 조회
-     */
-    public List<FriendRequest> getReceivedRequests(final Member receiver) {
-        return friendRequestRepository.findByReceiverAndStatus(receiver, FriendStatus.PENDING);
-    }
+    //     Friend newFriend = request.accept();
+    //     friendRepository.save(newFriend);
 
-    /**
-     * 보낸 친구 요청 목록 조회
-     */
-    public List<FriendRequest> getSentRequests(final Member requester) {
-        return friendRequestRepository.findByRequesterAndStatus(requester, FriendStatus.PENDING);
-    }
+    //     // eventPublisher.publish(new FriendRequestAcceptedEvent(
+    //     //         request.getId(),
+    //     //         request.getRequester().getId(),
+    //     //         receiverId));
+    // }
 
-    /**
-     * 친구 요청이 대기 상태인지 확인
-     */
-    public boolean isPending(final Long requestId) {
-        FriendRequest request = getOrThrow(requestId);
-        return request.isPending();
-    }
+    // /**
+    //  * 친구 요청을 거절합니다.
+    //  */
+    // public void rejectFriendRequest(MemberId receiverId, FriendRequestId requestId) {
+    //     FriendRequest request = findFriendRequestById(requestId);
+    //     Member receiver = findMemberById(receiverId);
 
-    /**
-     * 이미 친구 요청을 보냈는지 확인
-     */
-    private void validateNotAlreadyRequested(final Member requester, final Member receiver) {
-        friendRequestRepository.findByRequesterAndReceiverAndStatus(requester, receiver, FriendStatus.PENDING)
-                .ifPresent(request -> {
-                    throw new BadRequestException(ExceptionType.FRIEND_REQUEST_ALREADY_SENT);
-                });
-    }
+    //     validateFriendRequestRejection(request, receiver);
 
-    /**
-     * 대기 중인 친구 요청 수 조회
-     */
-    public int countPendingRequests(final Member receiver) {
-        return friendRequestRepository.countByReceiverAndStatus(receiver, FriendStatus.PENDING);
-    }
+    //     request.reject();
+    //     friendRequestRepository.save(request);
+
+    //     // eventPublisher.publish(new FriendRequestRejectedEvent(
+    //     //         request.getId(),
+    //     //         request.getRequester().getId(),
+    //     //         receiverId));
+    // }
+
+    // /**
+    //  * 받은 친구 요청 목록을 조회합니다.
+    //  */
+    // @Transactional(readOnly = true)
+    // public List<FriendRequestResponse> getReceivedFriendRequests(MemberId memberId) {
+    //     Member member = findMemberById(memberId);
+    //     return friendRequestRepository.findPendingRequestsByReceiver(member)
+    //             .stream()
+    //             .map(FriendRequestResponse::from)
+    //             .collect(Collectors.toList());
+    // }
+
+    // // 검증 메서드
+    // private void validateFriendRequestCreation(Member requester, Member receiver) {
+    //     if (friendRepository.existsByUsers(requester, receiver)) {
+    //         throw new BadRequestException(ExceptionType.ALREADY_FRIENDS);
+    //     }
+        
+    //     if (friendRequestRepository.existsPendingRequest(requester, receiver)) {
+    //         throw new BadRequestException(ExceptionType.FRIEND_REQUEST_ALREADY_SENT);
+    //     }
+    // }
+
+    // private void validateFriendRequestAcceptance(FriendRequest request, Member receiver) {
+    //     if (!request.getReceiver().equals(receiver)) {
+    //         throw new UnauthorizedFriendRequestException("친구 요청을 수락할 권한이 없습니다.", request.getId());
+    //     }
+    // }
+
+    // private void validateFriendRequestRejection(FriendRequest request, Member receiver) {
+    //     if (!request.getReceiver().equals(receiver)) {
+    //         throw new UnauthorizedFriendRequestException("친구 요청을 거절할 권한이 없습니다.", request.getId());
+    //     }
+    // }
+
+    // // 헬퍼 메서드
+    // private Member findMemberById(MemberId memberId) {
+    //     return memberRepository.findById(memberId)
+    //     .orElseThrow(() -> new NotFoundException(ExceptionType.MEMBER_NOT_FOUND));
+    // }
+
+    // private FriendRequest findFriendRequestById(FriendRequestId requestId) {
+    //     return friendRequestRepository.findById(requestId)
+    //     .orElseThrow(() -> new NotFoundException(ExceptionType.FRIEND_REQUEST_NOT_FOUND));
+    // }
 }

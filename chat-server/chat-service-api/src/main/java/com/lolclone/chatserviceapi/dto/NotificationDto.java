@@ -3,8 +3,8 @@ package com.lolclone.chatserviceapi.dto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.lolclone.chatdomain.domain.Notification;
-import com.lolclone.chatdomain.domain.NotificationType;
+import com.lolclone.chatdomain.domain.notification.Notification;
+import com.lolclone.chatdomain.domain.notification.NotificationType;
 
 import lombok.Builder;
 
@@ -31,10 +31,10 @@ public record NotificationDto(
 
     public static NotificationDto from(Notification notification, String message) {
         return NotificationDto.builder()
-                .id(notification.getId())
+                .id(notification.getId().getValue())
                 .type(notification.getType())
                 .message(message)
-                .senderId(notification.getSender().getId())
+                .senderId(notification.getSender().getId().getValue())
                 .senderNickname(notification.getSender().getNickname())
                 .createdAt(notification.getCreatedDate())
                 .build();

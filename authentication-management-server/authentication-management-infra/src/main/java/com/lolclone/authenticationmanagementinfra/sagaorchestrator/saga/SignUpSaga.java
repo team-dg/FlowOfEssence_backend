@@ -17,14 +17,14 @@ public class SignUpSaga implements SimpleSaga<SignUpSagaState>{
     public SignUpSaga(UserServiceProxy userServiceProxy, AuthenticationServiceProxy authenticationServiceProxy, ChatServiceProxy chatServiceProxy) {
         this.sagaDefinition = 
                 step()
+                    .withCompensation(authenticationServiceProxy.undoCreateUser, SignUpSagaState::makeUndoCreateSignUpUserCommand)
+                .step()
                     .invokeParticipant(userServiceProxy.createUser, SignUpSagaState::makeCreateUserCommand)
                     .withCompensation(userServiceProxy.undoCreateUser, SignUpSagaState::makeUndoCreateUserCommand)
                 .step()
                     .invokeParticipant(chatServiceProxy.createUserChat, SignUpSagaState::makeCreateUserChatCommand)
                     .withCompensation(chatServiceProxy.undoCreateUserChat, SignUpSagaState::makeUndoCreateUserChatCommand)
-                .step()
-                    .invokeParticipant(authenticationServiceProxy.createUser, SignUpSagaState::makeCreateSignUpUserCommand)
-                    .withCompensation(authenticationServiceProxy.undoCreateUser, SignUpSagaState::makeUndoCreateSignUpUserCommand)
+                    // .invokeParticipant(authenticationServiceProxy.createUser, SignUpSagaState::makeCreateSignUpUserCommand)
                 .build();
     }
 

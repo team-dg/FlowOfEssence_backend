@@ -4,9 +4,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import com.lolclone.chatdomain.domain.Member;
-import com.lolclone.chatdomain.domain.Notification;
-import com.lolclone.chatdomain.domain.NotificationType;
+import com.lolclone.chatdomain.domain.member.Member;
+import com.lolclone.chatdomain.domain.notification.Notification;
+import com.lolclone.chatdomain.domain.notification.NotificationType;
 import com.lolclone.chatinfra.exception.commonexception.InternalServerException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;
 import com.lolclone.chatserviceapi.dto.NotificationDto;
@@ -44,15 +44,20 @@ public class NotificationHandler {
      * 알림 타입에 따른 메시지 생성
      */
     private String createNotificationMessage(NotificationType type, Object... params) {
-        return switch (type) {
-            case FRIEND_REQUEST -> String.format("%s님이 친구 요청을 보냈습니다.", params[0]);
-            case FRIEND_REQUEST_ACCEPTED -> String.format("%s님이 친구 요청을 수락했습니다.", params[0]);
-            case FRIEND_REQUEST_REJECTED -> String.format("%s님이 친구 요청을 거절했습니다.", params[0]);
-            case GAME_INVITE -> String.format("%s님이 게임 초대를 보냈습니다.", params[0]);
-            case GAME_INVITE_ACCEPTED -> String.format("%s님이 게임 초대를 수락했습니다.", params[0]);
-            case GAME_INVITE_REJECTED -> String.format("%s님이 게임 초대를 거절했습니다.", params[0]);
-            default -> "알 수 없는 알림";
-        };
+        if (type.isFriendRequest()) {
+            return String.format("%s님이 친구 요청을 보냈습니다.", params[0]);
+        } else if (type.isFriendRequestAccepted()) {
+            return String.format("%s님이 친구 요청을 수락했습니다.", params[0]);
+        } else if (type.isFriendRequestRejected()) {
+            return String.format("%s님이 친구 요청을 거절했습니다.", params[0]);
+        } else if (type.isGameInvite()) {
+            return String.format("%s님이 게임 초대를 보냈습니다.", params[0]);
+        } else if (type.isGameInviteAccepted()) {
+            return String.format("%s님이 게임 초대를 수락했습니다.", params[0]);
+        } else if (type.isGameInviteRejected()) {
+            return String.format("%s님이 게임 초대를 거절했습니다.", params[0]);
+        }
+        return "알 수 없는 알림";
     }
 }
 
