@@ -14,10 +14,10 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatParticipantId implements Serializable {
-    @Column(name = "chat_room_id")
+    @Column(name = "chat_room_ids")
     private UUID chatRoomId;
 
-    @Column(name = "user_id")
+    @Column(name = "user_ids")
     private UUID userId;
 
     @Builder

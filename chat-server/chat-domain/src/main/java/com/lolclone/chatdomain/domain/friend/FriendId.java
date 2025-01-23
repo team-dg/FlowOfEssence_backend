@@ -3,8 +3,6 @@ package com.lolclone.chatdomain.domain.friend;
 import java.io.Serializable;
 import java.util.UUID;
 
-import com.lolclone.chatdomain.domain.member.MemberId;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -26,7 +24,7 @@ public class FriendId implements Serializable {
         this.friendId = friendId;
     }
 
-    public static FriendId of(MemberId userId, MemberId friendId) {
-        return new FriendId(userId.getValue(), friendId.getValue());
+    public static FriendId of(UUID userId, UUID friendId) {
+        return new FriendId(userId, friendId);
     }
 }

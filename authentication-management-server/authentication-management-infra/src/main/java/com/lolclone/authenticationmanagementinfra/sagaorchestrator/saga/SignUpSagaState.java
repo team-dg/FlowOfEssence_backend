@@ -16,16 +16,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 public class SignUpSagaState {
     private UUID userId;
     private String nickname;
-    private UUID refreshTokenId;
 
     @Override
     public boolean equals(Object o) {
@@ -62,6 +59,6 @@ public class SignUpSagaState {
     }
 
     public UndoCreateSignUpUserCommand makeUndoCreateSignUpUserCommand() {
-        return new UndoCreateSignUpUserCommand(getUserId(), getRefreshTokenId());
+        return new UndoCreateSignUpUserCommand(getUserId());
     }
 }

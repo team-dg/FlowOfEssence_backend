@@ -2,7 +2,7 @@ package com.lolclone.chatdomain.domain;
 
 import java.time.LocalDateTime;
 
-import com.lolclone.chatdomain.common.BaseTimeEntity;
+import com.lolclone.chatdomain.domain.common.BaseTimeEntity;
 import com.lolclone.chatdomain.domain.member.Member;
 
 import jakarta.persistence.*;

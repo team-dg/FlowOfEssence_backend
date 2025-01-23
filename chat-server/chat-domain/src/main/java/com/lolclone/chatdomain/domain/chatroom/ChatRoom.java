@@ -1,12 +1,16 @@
 package com.lolclone.chatdomain.domain.chatroom;
 
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-import com.lolclone.chatdomain.common.BaseTimeEntity;
 import com.lolclone.chatdomain.domain.chatparticipant.ChatParticipant;
+import com.lolclone.chatdomain.domain.common.BaseTimeEntity;
 import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.domain.message.Message;
 import com.lolclone.chatdomain.exception.DuplicateParticipantException;
@@ -33,8 +37,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatRoom extends BaseTimeEntity {
-    @EmbeddedId
-    private ChatRoomId id; // UUID를 값 객체로 변환
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "chat_room_id")
+    private UUID id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -46,19 +52,31 @@ public class ChatRoom extends BaseTimeEntity {
     @Embedded
     private LastMessage lastMessage; // 마지막 메시지 값 객체
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final Set<ChatParticipant> participants = new HashSet<>();
+    @Column(name = "game_session_id")
+    private UUID gameSessionId; // 게임 채팅방 연동
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
-    private final List<Message> messages = new ArrayList<>();
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ChatParticipant> participants;
+
+    @OneToMany(mappedBy = "chatRoom", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<Message> messages;
+
+    @ElementCollection
+    @CollectionTable(
+        name = "chat_room_teams", 
+        joinColumns = @JoinColumn(name = "room_id")
+    )
+    private Map<Member, TeamColor> teams;
 
     // 생성자는 private으로 제한
     @Builder
     private ChatRoom(ChatRoomType type) {
-        this.id = ChatRoomId.newId();
         this.type = type;
         this.status = ChatRoomStatus.active();
         this.lastMessage = LastMessage.empty();
+        this.participants = new HashSet<>();
+        this.messages = new ArrayList<>();
+        this.teams = new HashMap<>();
     }
 
     // 정적 팩토리 메서드
@@ -81,9 +99,9 @@ public class ChatRoom extends BaseTimeEntity {
         validateActiveRoom();
         validateParticipant(sender);
 
-        Message message = Message.create(this, sender, content);
+        Message message = Message.create(this, sender, content, Duration.ofMinutes(10));
         messages.add(message);
-        this.lastMessage = LastMessage.from(message);
+        this.lastMessage = LastMessage.from(message.getId());
 
         return message;
     }
@@ -137,7 +155,7 @@ public class ChatRoom extends BaseTimeEntity {
 
     private void validateNewParticipant(Member member) {
         if (hasParticipant(member)) {
-            throw new DuplicateParticipantException(member.getId().getValue(), this.id);
+            throw new DuplicateParticipantException(member.getId(), this.id);
         }
         if (isPersonal() && participants.size() >= 2) {
             throw new TooManyParticipantsException(this.id);
@@ -172,7 +190,8 @@ public class ChatRoom extends BaseTimeEntity {
                 .orElseThrow(() -> new ParticipantNotFoundException(member.getId(), this.id));
     }
 
-    public ChatRoomId getId() {
-        return this.id;
+    public enum TeamColor{
+        RED,
+        BLUE
     }
 }

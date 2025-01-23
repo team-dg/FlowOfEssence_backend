@@ -91,7 +91,10 @@ public class NotificationType {
         GAME_INVITE_ACCEPTED("게임 초대 수락"),
         GAME_INVITE_REJECTED("게임 초대 거절"),
         GAME_INVITE_EXPIRED("게임 초대 만료"),
-        GAME_INVITE_CANCELED("게임 초대 취소");
+        GAME_INVITE_CANCELED("게임 초대 취소"),
+        GAME_STARTED("게임 시작"), 
+        GAME_FINISHED("게임 종료"),
+        TEAM_CHAT_MENTION("팀 채팅 멘션");
 
         private final String description;
 

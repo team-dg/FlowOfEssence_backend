@@ -31,10 +31,10 @@ public record NotificationDto(
 
     public static NotificationDto from(Notification notification, String message) {
         return NotificationDto.builder()
-                .id(notification.getId().getValue())
+                .id(notification.getId())
                 .type(notification.getType())
                 .message(message)
-                .senderId(notification.getSender().getId().getValue())
+                .senderId(notification.getSender().getId())
                 .senderNickname(notification.getSender().getNickname())
                 .createdAt(notification.getCreatedDate())
                 .build();

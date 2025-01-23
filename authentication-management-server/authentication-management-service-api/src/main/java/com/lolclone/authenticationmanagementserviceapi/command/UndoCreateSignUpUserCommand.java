@@ -9,10 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UndoCreateSignUpUserCommand extends AuthenticationCommand {
-    private UUID refreshTokenId;
-
-    public UndoCreateSignUpUserCommand(UUID userId, UUID refreshTokenId) {
+    public UndoCreateSignUpUserCommand(UUID userId) {
         super(userId);
-        this.refreshTokenId = refreshTokenId;
     }
 }

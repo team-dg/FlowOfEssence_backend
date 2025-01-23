@@ -3,6 +3,7 @@ package com.lolclone.chatinfra.config.saga;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import io.eventuate.common.jdbc.EventuateJdbcStatementExecutor;
 import io.eventuate.common.jdbc.EventuateSchema;
@@ -12,6 +13,7 @@ import io.eventuate.tram.consumer.jdbc.SqlTableBasedDuplicateMessageDetector;
 
 @Configuration
 public class SagaConfiguration {
+    private static final String DUPLICATE_MESSAGE_DETECTOR_BEAN_NAME = "chatDuplicateMessageDetector";
     @Autowired
     private EventuateSchema eventuateSchema;
 
@@ -21,9 +23,10 @@ public class SagaConfiguration {
     @Autowired
     private EventuateTransactionTemplate eventuateTransactionTemplate;
 
-    @Bean
+    @Bean(DUPLICATE_MESSAGE_DETECTOR_BEAN_NAME)
+    @Primary
     public DuplicateMessageDetector duplicateMessageDetector() {
-        String currentTimeInMillisecondsSql = "CURRENT_TIMESTAMP(3)";
+        String currentTimeInMillisecondsSql = "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000";
         return new SqlTableBasedDuplicateMessageDetector(eventuateSchema, currentTimeInMillisecondsSql, eventuateJdbcStatementExecutor, eventuateTransactionTemplate);
     }
 }

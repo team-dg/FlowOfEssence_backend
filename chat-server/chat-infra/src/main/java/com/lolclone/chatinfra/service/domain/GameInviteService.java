@@ -9,10 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lolclone.chatdomain.domain.gameinvite.GameInvite;
-import com.lolclone.chatdomain.domain.gameinvite.GameInviteId;
 import com.lolclone.chatdomain.domain.gameinvite.GameInviteStatus;
 import com.lolclone.chatdomain.domain.member.Member;
-import com.lolclone.chatdomain.domain.member.MemberId;
 import com.lolclone.chatdomain.repository.GameInviteRepository;
 import com.lolclone.chatdomain.repository.MemberRepository;
 import com.lolclone.chatinfra.exception.commonexception.BadRequestException;

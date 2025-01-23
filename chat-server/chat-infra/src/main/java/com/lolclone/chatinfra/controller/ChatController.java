@@ -1,32 +1,18 @@
 package com.lolclone.chatinfra.controller;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lolclone.chatdomain.domain.chatroom.ChatRoom;
-import com.lolclone.chatdomain.domain.friend.Friend;
-import com.lolclone.chatdomain.domain.friendrequest.FriendRequest;
-import com.lolclone.chatdomain.domain.message.Message;
 import com.lolclone.chatdomain.repository.friend.query.FriendChatInfoDto;
 import com.lolclone.chatinfra.service.application.ChatService;
-import com.lolclone.chatserviceapi.dto.MessageRequestDto;
-import com.lolclone.chatserviceapi.dto.UserSearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
 

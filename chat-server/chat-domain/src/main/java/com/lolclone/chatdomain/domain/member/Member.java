@@ -1,13 +1,13 @@
 package com.lolclone.chatdomain.domain.member;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
-import com.lolclone.chatdomain.common.BaseEntity;
 import com.lolclone.chatdomain.domain.MemberDomainEvent;
 import com.lolclone.chatdomain.domain.MemberStatus;
+import com.lolclone.chatdomain.domain.common.BaseEntity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -21,30 +21,23 @@ import lombok.NoArgsConstructor;
  * 사용자 마지막 로그인 시간 관리
  */
 @Entity
-@Table(name = "users")
+@Table(name = "users",
+indexes = {
+    @Index(name = "idx_nickname", columnList = "nickname"),
+    @Index(name = "idx_status", columnList = "status")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
-    @EmbeddedId
-    private MemberId id; // UUID를 값 객체로 변환
+    @Id
+    private UUID id;
 
     @Column(name = "nickname", nullable = false, length = 10)
     private String nickname;
 
     @ElementCollection
-    @CollectionTable(
-        name = "member_tags",
-        joinColumns = @JoinColumn(name = "member_id"),
-        indexes = @Index(name = "idx_member_tags", columnList = "tag")
-    )
-    @Column(name = "tag")
-    private Set<String> tags = new HashSet<>();
-
-    @Column(name = "last_active_time")
-    private LocalDateTime lastActiveTime;
-
-    @Column(name = "online", nullable = false)
-    private boolean online;
+    @CollectionTable(name = "member_tags", joinColumns = @JoinColumn(name = "member_id"))
+    private Set<String> tags;
 
     @Embedded
     private MemberStateInfo stateInfo; // 상태 관련 정보를 값 객체로 분리
@@ -52,12 +45,27 @@ public class Member extends BaseEntity {
     @Column(name = "game_info")
     private GameInfo gameInfo;
 
+    @ElementCollection
+    @CollectionTable(name = "blocked_users", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "blocked_user_id")
+    private Set<UUID> blockedUserIds = new HashSet<>();
+
+    @Column(name = "current_lobby_participants")
+    private Integer currentLobbyParticipants;
+
+    public void blockUser(UUID userId) {
+        blockedUserIds.add(userId);
+    }
+
+    public void unblockUser(UUID userId) {
+        blockedUserIds.remove(userId);
+    }
+
     @Builder
-    private Member(MemberId id, String nickname) {
+    private Member(UUID id, String nickname) {
         this.id = id;
         this.nickname = nickname;
         this.tags = new HashSet<>();
-        this.online = false;
         this.stateInfo = MemberStateInfo.init();
     }
 
@@ -73,13 +81,11 @@ public class Member extends BaseEntity {
     public void startGame(GameType gameType, GameMode gameMode) {
         this.gameInfo = GameInfo.createGameInfo(gameType, gameMode);
         this.stateInfo = this.stateInfo.updateStatus(MemberStatus.IN_GAME);
-        this.lastActiveTime = LocalDateTime.now();
     }
 
     public void endGame() {
         this.gameInfo = GameInfo.empty();
         this.stateInfo = this.stateInfo.updateStatus(MemberStatus.ONLINE);
-        this.lastActiveTime = LocalDateTime.now();
     }
 
     public String getGameStatusDisplay() {
@@ -88,11 +94,9 @@ public class Member extends BaseEntity {
 
     public void updateGameInfo(GameInfo gameInfo) {
         this.gameInfo = gameInfo;
-        this.lastActiveTime = LocalDateTime.now();
     }
 
     public void updateLoginStatus(boolean online) {
-        this.online = online;
         this.stateInfo = this.stateInfo.updateStatus(
                 online ? MemberStatus.ONLINE : MemberStatus.OFFLINE);
     }
@@ -116,6 +120,6 @@ public class Member extends BaseEntity {
     }
 
     public boolean isOnline() {
-        return this.online;
+        return this.stateInfo.getStatus() == MemberStatus.ONLINE;
     }
 }

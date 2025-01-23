@@ -2,13 +2,7 @@ package com.lolclone.chatdomain.domain.chatroom;
 
 import java.time.LocalDateTime;
 
-import com.lolclone.chatdomain.domain.message.Message;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,15 +11,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LastMessage {
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "last_message_id")
-    private Message message;
+
+    private Long lastMessageId;
 
     @Column(name = "last_message_sent_at")
     private LocalDateTime sentAt;
 
-    private LastMessage(Message message) {
-        this.message = message;
+    private LastMessage(Long lastMessageId) {
+        this.lastMessageId = lastMessageId;
         this.sentAt = LocalDateTime.now();
     }
 
@@ -33,11 +26,11 @@ public class LastMessage {
         return new LastMessage(null);
     }
 
-    public static LastMessage from(Message message) {
-        return new LastMessage(message);
+    public static LastMessage from(Long lastMessageId) {
+        return new LastMessage(lastMessageId);
     }
 
     public boolean hasMessage() {
-        return message != null;
+        return lastMessageId != null;
     }
 }

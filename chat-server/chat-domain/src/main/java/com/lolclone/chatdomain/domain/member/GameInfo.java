@@ -1,6 +1,7 @@
 package com.lolclone.chatdomain.domain.member;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -15,6 +16,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GameInfo {
+    @Column(name = "game_session_id")
+    private UUID gameSessionId;
+
+    @Column(name = "post_game_chat_room_id")
+    private UUID postGameChatRoomId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "game_type")
     private GameType gameType;

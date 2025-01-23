@@ -2,9 +2,12 @@ package com.lolclone.authenticationmanagementinfra.service.application;
 
 import java.util.UUID;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.lolclone.authenticationmanagementdomain.domain.Member;
 import com.lolclone.authenticationmanagementdomain.domain.oauth2.OAuth2Client;
 import com.lolclone.authenticationmanagementdomain.domain.oauth2.OAuth2Clients;
 import com.lolclone.authenticationmanagementdomain.domain.openid.OpenIdClient;
@@ -17,6 +20,7 @@ import com.lolclone.authenticationmanagementserviceapi.dto.SignUpRequest;
 import com.lolclone.authenticationmanagementserviceapi.dto.TokenRefreshResponse;
 import com.lolclone.authenticationmanagementserviceapi.dto.TokenRefreshResult;
 import com.lolclone.authenticationmanagementserviceapi.dto.TokenResponse;
+import com.lolclone.authenticationmanagementserviceapi.event.SignUpCompletedEvent;
 import com.lolclone.commonmodule.apigatewayserver.domain.MemberAuthentication;
 import com.lolclone.commonmodule.authenticationmanagementserver.domain.SocialType;
 import com.lolclone.commonmodule.authenticationmanagementserver.domain.UserInfo;
@@ -33,25 +37,26 @@ public class OAuth2AuthenticationFacade {
     private final OpenIdClients openIdClients;
     private final UserAuthService userAuthService;
     private final MemberAuthenticationTokenProvider memberAuthenticationTokenProvider;
+    private final SimpMessagingTemplate messagingTemplate;
     
     @Transactional
-    public LoginResponse oAuth2Login(SocialType socialType, String code) {
+    public UUID oAuth2Login(SocialType socialType, String code) {
         OAuth2Client oAuth2Client = oAuth2Clients.getClient(socialType);
         UserInfo userInfo = oAuth2Client.getUserInfo(code);
         return login(userInfo);
     }
 
     @Transactional
-    public LoginResponse openIdLogin(SocialType socialType, String idToken) {
+    public UUID openIdLogin(SocialType socialType, String idToken) {
         OpenIdClient openIdClient = openIdClients.getClient(socialType);
         UserInfo userInfo = openIdClient.getUserInfo(idToken);
         return login(userInfo);
     }
 
     @Transactional
-    public LoginResponse login(UserInfo userInfo) {
-        LoginResult loginResult = userAuthService.oAuth2Login(userInfo);
-        return createLoginResponse(loginResult);
+    public UUID login(UserInfo userInfo) {
+        Member member = userAuthService.oAuth2Login(userInfo);
+        return member.getId();
     }
 
     @Transactional
@@ -61,9 +66,22 @@ public class OAuth2AuthenticationFacade {
     }
 
     @Transactional
-    public LoginResponse originalSignUp(SignUpRequest signUpRequest) {
-        LoginResult loginResult = userAuthService.originalSignUp(signUpRequest);
-        return createLoginResponse(loginResult);
+    public UUID originalSignUp(SignUpRequest signUpRequest) {
+        Member member = userAuthService.originalSignUp(signUpRequest);
+        return member.getId();
+    }
+
+    @TransactionalEventListener
+    public void handleSignUpCompleted(SignUpCompletedEvent event) {
+        LoginResult loginResult = userAuthService.TokenCreate(event.userId());
+        LoginResponse response = createLoginResponse(loginResult);
+
+        // 실제에서는 캐시로 안정장치를 걸어두는게 좋음
+
+        messagingTemplate.convertAndSend(
+            "/topic/signup/" + event.userId(),
+            response
+        );
     }
 
     private LoginResponse createLoginResponse(LoginResult loginResult) {

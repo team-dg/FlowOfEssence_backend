@@ -8,12 +8,17 @@ import org.springframework.stereotype.Repository;
 import com.lolclone.chatdomain.domain.MemberStatus;
 import com.lolclone.chatdomain.domain.friend.FriendshipStatus;
 import com.lolclone.chatdomain.repository.friend.query.FriendChatInfoDto;
+import com.lolclone.chatdomain.repository.friend.query.QChatRoomInfoDto;
+import com.lolclone.chatdomain.repository.friend.query.QFriendChatInfoDto;
+import com.lolclone.chatdomain.repository.friend.query.QFriendRelationDto;
+import com.lolclone.chatdomain.repository.friend.query.QFriendStateDto;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -39,8 +44,8 @@ public class FriendRepositoryImpl implements QuerydslFriendRepository {
                 .select(friend1.count())
                 .from(friend1)
                 .where(
-                    friend1.user.id.value.eq(userId),
-                    friend1.status.status.eq(FriendshipStatus.Status.ACTIVE))
+                    friend1.user.id.eq(userId),
+                    friend1.friendshipStatus.status.eq(FriendshipStatus.Status.ACTIVE))
                 .fetchOne();
     }
 
@@ -50,7 +55,7 @@ public class FriendRepositoryImpl implements QuerydslFriendRepository {
 
         if (sortByNickname) {
             query.orderBy(friend1.friend.nickname.asc());
-        }
+        } 
 
         List<FriendChatInfoDto> content = query
             .offset(pageable.getOffset())
@@ -84,36 +89,28 @@ public class FriendRepositoryImpl implements QuerydslFriendRepository {
 
     private JPAQuery<FriendChatInfoDto> createBaseFriendQuery(UUID userId) {
         return queryFactory
-            .select(Projections.constructor(FriendChatInfoDto.class,
-                friend1.friend.id.value,
+            .select(new QFriendChatInfoDto(
+                friend1.friend.id,
                 friend1.friend.nickname,
-                friend1.friend.stateInfo.status,
-                new CaseBuilder()
-                    .when(friend1.friend.gameInfo.isNotNull())
-                    .then(Expressions.stringTemplate(
-                        "CONCAT({0}, ' ', {1}, '게임 중')",
-                        friend1.friend.gameInfo.gameMode.stringValue(),
-                        friend1.friend.gameInfo.gameType.stringValue()
-                    ))
-                    .otherwise((String)null),
-                friend1.friend.lastActiveTime,
-                friend1.friend.online,
-                chatRoom.id.value,
-                message.content.value,
-                message.sender.id.value,
-                message.createdDate,
-                chatParticipant.status.muted,
-                ExpressionUtils.as(
-                    JPAExpressions
-                        .select(message.count())
-                        .from(message)
-                        .where(message.chatRoom.eq(chatRoom)
-                        .and(message.createdDate.gt(chatParticipant.lastReadMessage.readAt))),
-                    "unreadMessageCount"
+                new QFriendStateDto(
+                    friend1.friend.stateInfo.status,
+                    createGameInfoExpression(),
+                    friend1.friend.updatedDate,
+                    friend1.friend.stateInfo.status.ne(MemberStatus.OFFLINE)
                 ),
-                friend1.memo,
-                friend1.friend.tags,
-                friend1.status.status.eq(FriendshipStatus.Status.BLOCKED)
+                new QChatRoomInfoDto(
+                    chatRoom.id,
+                    message.messageContent.content,
+                    message.sender.id,
+                    message.createdDate,
+                    chatParticipant.status.muted,
+                    createUnreadMessageCountSubQuery()
+                ),
+                new QFriendRelationDto(
+                    friend1.memo,
+                    friend1.friend.tags,
+                    friend1.friendshipStatus.status.eq(FriendshipStatus.Status.BLOCKED)
+                )
             ))
             .from(friend1)
             .leftJoin(chatRoom).on(chatRoom.id.in(
@@ -121,8 +118,9 @@ public class FriendRepositoryImpl implements QuerydslFriendRepository {
                             .select(chatRoom.id)
                             .from(chatRoom)
                             .join(chatParticipant).on(chatParticipant.chatRoom.eq(chatRoom))
-                            .where(chatParticipant.user.id.value.eq(userId))))
-            .leftJoin(chatParticipant).on(chatParticipant.chatRoom.eq(chatRoom))
+                            .where(chatParticipant.user.id.eq(userId))))
+            .leftJoin(chatParticipant).on(chatParticipant.chatRoom.eq(chatRoom)
+                .and(chatParticipant.user.id.eq(userId)))
             .leftJoin(message).on(message.eq(
                 JPAExpressions
                         .select(message)
@@ -131,8 +129,30 @@ public class FriendRepositoryImpl implements QuerydslFriendRepository {
                         .orderBy(message.createdDate.desc())
                         .limit(1)))
             .where(
-                friend1.user.id.value.eq(userId),
-                friend1.status.status.eq(FriendshipStatus.Status.ACTIVE)
+                friend1.user.id.eq(userId),
+                friend1.friendshipStatus.status.eq(FriendshipStatus.Status.ACTIVE)
             );
+    }
+
+    private StringExpression createGameInfoExpression() {
+        return new CaseBuilder()
+            .when(friend1.friend.gameInfo.isNotNull())
+            .then(Expressions.stringTemplate(
+                "CONCAT({0}, ' ', {1}, '게임 중')",
+                friend1.friend.gameInfo.gameMode.stringValue(),
+                friend1.friend.gameInfo.gameType.stringValue()
+            ))
+            .otherwise((String)null);
+    }
+
+    private Expression<Integer> createUnreadMessageCountSubQuery() {
+        return ExpressionUtils.as(
+            JPAExpressions
+                .select(message.count().intValue())
+                .from(message)
+                .where(message.chatRoom.eq(chatRoom)
+                .and(message.createdDate.gt(chatParticipant.lastReadMessage.readAt))),
+            "unreadMessageCount"
+        );
     }
 }

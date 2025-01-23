@@ -39,15 +39,11 @@ public class ChatParticipant {
     @Embedded
     private ParticipantStatus status;
 
-    @Embedded
-    private Memo memo; // 친구 메모
-
     private ChatParticipant(ChatRoom chatRoom, Member member) {
         this.chatRoom = chatRoom;
         this.user = member;
         this.lastReadMessage = LastReadMessage.init();
         this.status = ParticipantStatus.active();
-        this.memo = Memo.empty(); // 초기 메모는 비어있음
     }
 
     // 정적 팩토리 메서드
@@ -58,9 +54,6 @@ public class ChatParticipant {
     }
 
     // 비즈니스 메서드
-    public void updateMemo(String content) {
-        this.memo = Memo.of(content);
-    }
     
     public void readMessage(Message message) {
         validateParticipant(message.getChatRoom());

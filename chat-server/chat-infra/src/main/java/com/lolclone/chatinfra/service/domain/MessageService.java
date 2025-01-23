@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lolclone.chatdomain.domain.chatroom.ChatRoom;
-import com.lolclone.chatdomain.domain.chatroom.ChatRoomId;
 import com.lolclone.chatdomain.domain.member.Member;
-import com.lolclone.chatdomain.domain.member.MemberId;
 import com.lolclone.chatdomain.domain.message.Message;
 import com.lolclone.chatdomain.exception.UnauthorizedParticipantException;
 import com.lolclone.chatdomain.repository.ChatRoomRepository;

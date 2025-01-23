@@ -17,6 +17,10 @@ public class FriendshipStatus {
         this.status = status;
     }
 
+    public static FriendshipStatus of(Status status) {
+        return new FriendshipStatus(status);
+    }
+
     public static FriendshipStatus active() {
         return new FriendshipStatus(Status.ACTIVE);
     }
@@ -42,6 +46,7 @@ public class FriendshipStatus {
     }
 
     public enum Status {
+        PENDING,
         ACTIVE,
         BLOCKED,
         UNFRIENDED

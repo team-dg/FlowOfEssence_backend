@@ -1,4 +1,4 @@
-package com.lolclone.chatdomain.config;
+package com.lolclone.chatinfra.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

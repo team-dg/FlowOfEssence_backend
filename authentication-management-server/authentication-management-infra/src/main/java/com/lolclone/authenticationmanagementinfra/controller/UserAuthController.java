@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lolclone.authenticationmanagementinfra.service.application.OAuth2AuthenticationFacade;
+import com.lolclone.authenticationmanagementserviceapi.dto.CreateMemberResponse;
 import com.lolclone.authenticationmanagementserviceapi.dto.LoginRequest;
 import com.lolclone.authenticationmanagementserviceapi.dto.LoginResponse;
 import com.lolclone.authenticationmanagementserviceapi.dto.LogoutRequest;
@@ -37,11 +38,11 @@ public class UserAuthController {
     private final OAuth2AuthenticationFacade oAuth2AuthenticationFacade;
 
     @PostMapping("/login/oauth2")
-    public ResponseEntity<LoginResponse> oauth2Login(
+    public ResponseEntity<CreateMemberResponse> oauth2Login(
         @Valid @RequestBody final OAuth2LoginRequest oauth2LoginRequest
     ) {
-        final LoginResponse loginResponse = oAuth2AuthenticationFacade.oAuth2Login(oauth2LoginRequest.socialType(), oauth2LoginRequest.code());
-        return ResponseEntity.ok().body(loginResponse);
+        final UUID userId = oAuth2AuthenticationFacade.oAuth2Login(oauth2LoginRequest.socialType(), oauth2LoginRequest.code());
+        return ResponseEntity.ok().body(new CreateMemberResponse(userId));
     }
 
     @PostMapping("/login")
@@ -53,28 +54,28 @@ public class UserAuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<LoginResponse> signUp(
+    public ResponseEntity<CreateMemberResponse> signUp(
         @Valid @RequestBody final SignUpRequest signUpRequest
     ) {
-        final LoginResponse loginResponse = oAuth2AuthenticationFacade.originalSignUp(signUpRequest);
-        return ResponseEntity.ok().body(loginResponse); 
+        final UUID userId = oAuth2AuthenticationFacade.originalSignUp(signUpRequest);
+        return ResponseEntity.ok().body(new CreateMemberResponse(userId)); 
     }
 
     @GetMapping("/login/oauth2/{socialType}")
-    public ResponseEntity<LoginResponse> oauth2LoginRedirect(
+    public ResponseEntity<CreateMemberResponse> oauth2LoginRedirect(
         @PathVariable final SocialType socialType,
         @RequestParam final String code
     ) {
-        final LoginResponse loginResponse = oAuth2AuthenticationFacade.oAuth2Login(socialType, code);
-        return ResponseEntity.ok().body(loginResponse);
+        final UUID userId = oAuth2AuthenticationFacade.oAuth2Login(socialType, code);
+        return ResponseEntity.ok().body(new CreateMemberResponse(userId));
     }
 
     @PostMapping("/login/open-id")
-    public ResponseEntity<LoginResponse> openIdLogin(
+    public ResponseEntity<CreateMemberResponse> openIdLogin(
         @Valid @RequestBody final OpenIdLoginRequest openIdLoginRequest
     ) {
-        final LoginResponse loginResponse = oAuth2AuthenticationFacade.openIdLogin(openIdLoginRequest.socialType(), openIdLoginRequest.idToken());
-        return ResponseEntity.ok().body(loginResponse);
+        final UUID userId = oAuth2AuthenticationFacade.openIdLogin(openIdLoginRequest.socialType(), openIdLoginRequest.idToken());
+        return ResponseEntity.ok().body(new CreateMemberResponse(userId));
     }
 
     @UserAuth

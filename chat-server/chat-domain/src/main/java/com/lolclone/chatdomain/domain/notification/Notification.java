@@ -1,6 +1,10 @@
 package com.lolclone.chatdomain.domain.notification;
 
-import com.lolclone.chatdomain.common.BaseTimeEntity;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Map;
+
+import com.lolclone.chatdomain.domain.common.BaseTimeEntity;
 import com.lolclone.chatdomain.domain.friendrequest.FriendRequest;
 import com.lolclone.chatdomain.domain.gameinvite.GameInvite;
 import com.lolclone.chatdomain.domain.member.Member;
@@ -16,8 +20,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseTimeEntity {
-    @EmbeddedId
-    private NotificationId id; // ID를 값 객체로 분리
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "notification_id")
+    private Long id;
 
     @Embedded
     private NotificationContent content; // 내용을 값 객체로 분리
@@ -44,101 +50,129 @@ public class Notification extends BaseTimeEntity {
     @JoinColumn(name = "game_invite_id")
     private GameInvite gameInvite;
 
-    @Builder
-    private Notification(NotificationType type, Member recipient, Member sender,
-            String content, FriendRequest friendRequest) {
-        this.id = NotificationId.newId();
-        this.type = type;
-        this.recipient = recipient;
-        this.sender = sender;
-        this.content = NotificationContent.of(content);
-        this.status = NotificationStatus.unread();
-        this.friendRequest = friendRequest;
-    }
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
 
     @Builder
-    private Notification(NotificationType type, Member recipient, Member sender,
-            String content, GameInvite gameInvite) {
-        this.id = NotificationId.newId();
+    private Notification(
+        NotificationType type, 
+        Member recipient, 
+        Member sender,
+        String templateKey,
+        Map<String, String> variables,
+        FriendRequest friendRequest,
+        GameInvite gameInvite,
+        Duration ttl) {
         this.type = type;
         this.recipient = recipient;
         this.sender = sender;
-        this.content = NotificationContent.of(content);
+        this.content = NotificationContent.of(templateKey, variables);
         this.status = NotificationStatus.unread();
         this.gameInvite = gameInvite;
+        this.friendRequest = friendRequest;
+        this.gameInvite = gameInvite;
+        this.expiresAt = LocalDateTime.now().plus(ttl);
     }
 
     // 정적 팩토리 메서드
     public static Notification createFriendRequest(FriendRequest request) {
-        return new Notification(
-                NotificationType.friendRequest(),
-                request.getReceiver(),
-                request.getRequester(),
-                createFriendRequestContent(request.getRequester()).getValue(),
-                request);
+        return Notification.builder()
+            .type(NotificationType.friendRequest())
+            .recipient(request.getReceiver())
+            .sender(request.getRequester())
+            .templateKey("friend.request")
+            .variables(Map.of("sender", request.getRequester().getNickname()))
+            .friendRequest(request)
+            .ttl(Duration.ofDays(7)) // 7일 후 만료
+            .build();
     }
 
     public static Notification createFriendRequestAccepted(FriendRequest request) {
-        return new Notification(
-                NotificationType.friendRequestAccepted(),
-                request.getRequester(),
-                request.getReceiver(),
-                createFriendRequestAcceptedContent(request.getReceiver()).getValue(),
-                request);
+        return Notification.builder()
+            .type(NotificationType.friendRequestAccepted())
+            .recipient(request.getRequester())
+            .sender(request.getReceiver())
+            .templateKey("friend.request.accepted")
+            .variables(Map.of("accepter", request.getReceiver().getNickname()))
+            .friendRequest(request)
+            .ttl(Duration.ofDays(7))
+            .build();
     }
 
     public static Notification createFriendRequestRejected(FriendRequest request) {
-        return new Notification(
-                NotificationType.friendRequestRejected(),
-                request.getRequester(),
-                request.getReceiver(),
-                createFriendRequestRejectedContent(request.getReceiver()).getValue(),
-                request);
+        return Notification.builder()
+            .type(NotificationType.friendRequestRejected())
+            .recipient(request.getRequester())
+            .sender(request.getReceiver())
+            .templateKey("friend.request.rejected")
+            .variables(Map.of("rejecter", request.getReceiver().getNickname()))
+            .friendRequest(request)
+            .ttl(Duration.ofDays(7))
+            .build();
     }
 
+    // 정적 팩토리 메서드 (GameInvite 관련)
     public static Notification createGameInvite(GameInvite invite) {
-        return new Notification(
-                NotificationType.gameInvite(),
-                invite.getInviter(),
-                invite.getInvitee(),
-                createGameInviteContent(invite.getInviter()).getValue(),
-                invite);
+        return Notification.builder()
+            .type(NotificationType.gameInvite())
+            .recipient(invite.getInvitee())
+            .sender(invite.getInviter())
+            .templateKey("game.invite")
+            .variables(Map.of(
+                "inviter", invite.getInviter().getNickname(),
+                "gameType", invite.getGameType().getDisplayName()
+            ))
+            .gameInvite(invite)
+            .ttl(Duration.ofMinutes(30)) // 30분 후 만료
+            .build();
     }
 
     public static Notification createGameInviteAccepted(GameInvite invite) {
-        return new Notification(
-                NotificationType.gameInviteAccepted(),
-                invite.getInvitee(),
-                invite.getInviter(),
-                createGameInviteAcceptedContent(invite.getInvitee()).getValue(),
-                invite);
+        return Notification.builder()
+            .type(NotificationType.gameInviteAccepted())
+            .recipient(invite.getInviter())
+            .sender(invite.getInvitee())
+            .templateKey("game.invite.accepted")
+            .variables(Map.of("invitee", invite.getInvitee().getNickname()))
+            .gameInvite(invite)
+            .ttl(Duration.ofDays(1))
+            .build();
     }
 
     public static Notification createGameInviteRejected(GameInvite invite) {
-        return new Notification(
-                NotificationType.gameInviteRejected(),
-                invite.getInvitee(),
-                invite.getInviter(),
-                createGameInviteRejectedContent(invite.getInvitee()).getValue(),
-                invite);
+        return Notification.builder()
+            .type(NotificationType.gameInviteRejected())
+            .recipient(invite.getInviter())
+            .sender(invite.getInvitee())
+            .templateKey("game.invite.rejected")
+            .variables(Map.of("invitee", invite.getInvitee().getNickname()))
+            .gameInvite(invite)
+            .ttl(Duration.ofDays(1))
+            .build();
     }
 
     public static Notification createGameInviteExpired(GameInvite invite) {
-        return new Notification(
-                NotificationType.gameInviteExpired(),
-                invite.getInvitee(),
-                invite.getInviter(),
-                createGameInviteExpiredContent(invite.getInvitee()).getValue(),
-                invite);
+        return Notification.builder()
+            .type(NotificationType.gameInviteExpired())
+            .recipient(invite.getInvitee())
+            .sender(invite.getInviter())
+            .templateKey("game.invite.expired")
+            .variables(Map.of("inviter", invite.getInviter().getNickname()))
+            .gameInvite(invite)
+            .ttl(Duration.ofDays(1))
+            .build();
     }
 
     public static Notification createGameInviteCanceled(GameInvite invite) {
-        return new Notification(
-                NotificationType.gameInviteCanceled(),
-                invite.getInviter(),
-                invite.getInvitee(),
-                createGameInviteCanceledContent(invite.getInviter()).getValue(),
-                invite);
+        return Notification.builder()
+            .type(NotificationType.gameInviteCanceled())
+            .recipient(invite.getInvitee())
+            .sender(invite.getInviter())
+            .templateKey("game.invite.canceled")
+            .variables(Map.of("inviter", invite.getInviter().getNickname()))
+            .gameInvite(invite)
+            .ttl(Duration.ofDays(1))
+            .build();
     }
 
     // 상태 확인 메서드
@@ -152,38 +186,5 @@ public class Notification extends BaseTimeEntity {
 
     public boolean isFriendRequest() {
         return this.type.isFriendRequest();
-    }
-
-    // 컨텐츠 생성 메서드
-    private static NotificationContent createFriendRequestContent(Member requester) {
-        return NotificationContent.of(String.format("%s님이 친구 요청을 보냈습니다.", requester.getNickname()));
-    }
-
-    private static NotificationContent createFriendRequestAcceptedContent(Member accepter) {
-        return NotificationContent.of(String.format("%s님이 친구 요청을 수락했습니다.", accepter.getNickname()));
-    }
-
-    private static NotificationContent createFriendRequestRejectedContent(Member rejecter) {
-        return NotificationContent.of(String.format("%s님이 친구 요청을 거절했습니다.", rejecter.getNickname()));
-    }
-
-    private static NotificationContent createGameInviteContent(Member inviter) {
-        return NotificationContent.of(String.format("%s님이 게임에 초대하셨습니다.", inviter.getNickname()));
-    }
-
-    private static NotificationContent createGameInviteAcceptedContent(Member invitee) {
-        return NotificationContent.of(String.format("%s님이 게임 초대를 수락했습니다.", invitee.getNickname()));
-    }
-
-    private static NotificationContent createGameInviteRejectedContent(Member invitee) {
-        return NotificationContent.of(String.format("%s님이 게임 초대를 거절했습니다.", invitee.getNickname()));
-    }
-
-    private static NotificationContent createGameInviteExpiredContent(Member invitee) {
-        return NotificationContent.of(String.format("%s님과의 게임 초대가 만료되었습니다.", invitee.getNickname()));
-    }
-
-    private static NotificationContent createGameInviteCanceledContent(Member inviter) {
-        return NotificationContent.of(String.format("%s님이 게임 초대를 취소했습니다.", inviter.getNickname()));
     }
 }

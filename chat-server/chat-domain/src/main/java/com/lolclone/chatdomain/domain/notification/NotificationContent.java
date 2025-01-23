@@ -1,8 +1,12 @@
 package com.lolclone.chatdomain.domain.notification;
 
+import java.util.Map;
+
+import com.lolclone.chatdomain.domain.JsonConverter;
 import com.lolclone.chatdomain.exception.InvalidNotificationContentException;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,24 +16,37 @@ import lombok.NoArgsConstructor;
 @Getter(AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class NotificationContent {
-    @Column(name = "content", nullable = false)
-    private String value;
+    @Column(name = "template_key") // 알림 템플릿 키 (예: "game.invite")
+    private String templateKey;
+    
+    @Convert(converter = JsonConverter.class)
+    @Column(name = "variables") // JSON 형식의 변수 (예: { "inviter": "Alice" })
+    private Map<String, String> variables;
 
-    private NotificationContent(String value) {
-        validateContent(value);
-        this.value = value;
+    private NotificationContent(String templateKey, Map<String, String> variables) {
+        validateTemplateKey(templateKey);
+        validateVariables(variables);
+        this.templateKey = templateKey;
+        this.variables = variables;
     }
 
-    public static NotificationContent of(String content) {
-        return new NotificationContent(content);
+    public static NotificationContent of(String templateKey, Map<String, String> variables) {
+        return new NotificationContent(templateKey, variables);
     }
 
-    private void validateContent(String content) {
-        if (content == null || content.isBlank()) {
-            throw new InvalidNotificationContentException("알림 내용은 비어있을 수 없습니다.");
+    // 검증 메서드 수정
+    private void validateTemplateKey(String templateKey) {
+        if (templateKey == null || templateKey.isBlank()) {
+            throw new InvalidNotificationContentException("템플릿 키는 필수입니다.");
         }
-        if (content.length() > 200) {
-            throw new InvalidNotificationContentException("알림 내용은 200자를 초과할 수 없습니다.");
+        if (templateKey.length() > 50) {
+            throw new InvalidNotificationContentException("템플릿 키는 50자를 초과할 수 없습니다.");
+        }
+    }
+
+    private void validateVariables(Map<String, String> variables) {
+        if (variables == null) {
+            throw new InvalidNotificationContentException("변수는 null일 수 없습니다.");
         }
     }
 }

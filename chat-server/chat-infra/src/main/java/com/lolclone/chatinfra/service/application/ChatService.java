@@ -14,8 +14,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lolclone.chatdomain.domain.FriendFolder;
-import com.lolclone.chatdomain.domain.FriendInFolder;
 import com.lolclone.chatdomain.domain.MemberStatus;
 import com.lolclone.chatdomain.domain.chatparticipant.ChatParticipant;
 import com.lolclone.chatdomain.domain.chatroom.ChatRoom;
@@ -30,8 +28,6 @@ import com.lolclone.chatinfra.exception.commonexception.BadRequestException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;
 import com.lolclone.chatinfra.service.domain.ChatParticipantService;
 import com.lolclone.chatinfra.service.domain.ChatRoomService;
-import com.lolclone.chatinfra.service.domain.FriendFolderService;
-import com.lolclone.chatinfra.service.domain.FriendInFolderService;
 import com.lolclone.chatinfra.service.domain.FriendRequestService;
 import com.lolclone.chatinfra.service.domain.FriendService;
 import com.lolclone.chatinfra.service.domain.MemberService;
@@ -52,8 +48,6 @@ public class ChatService {
     private final MemberService memberService;
     private final FriendService friendService;
     private final FriendRequestService friendRequestService;
-    private final FriendInFolderService friendInFolderService;
-    private final FriendFolderService friendFolderService;
     private final FriendRepository friendRepository;
 
     private static final int MAX_PENDING_REQUESTS = 50; // 최대 대기 요청 수
@@ -64,15 +58,7 @@ public class ChatService {
         final boolean sortByNickname, 
         final Pageable pageable
     ) {
-        validateFriendCount(userId);
-        return friendRepository.findFriendByNickname(userId, sortByNickname, pageable);
-    }
-
-    private void validateFriendCount(UUID userId) {
-        long totalCount = friendRepository.countFriends(userId);
-        if (totalCount > MAX_FRIEND_COUNT) {
-            throw new IllegalStateException("친구 수가 최대 제한(" + MAX_FRIEND_COUNT + "명)을 초과했습니다.");
-        }
+        return friendService.getFriendListByNickname(userId, sortByNickname, pageable);
     }
 
 

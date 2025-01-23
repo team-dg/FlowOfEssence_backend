@@ -1,12 +1,14 @@
 package com.lolclone.chatdomain.domain.message;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-import com.lolclone.chatdomain.common.BaseTimeEntity;
 import com.lolclone.chatdomain.domain.chatroom.ChatRoom;
+import com.lolclone.chatdomain.domain.chatroom.ChatRoom.TeamColor;
+import com.lolclone.chatdomain.domain.common.BaseTimeEntity;
 import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.exception.MessageNotDeletableException;
 import com.lolclone.chatdomain.exception.MessageNotEditableException;
@@ -42,15 +44,26 @@ public class Message extends BaseTimeEntity {
     @JoinColumn(name = "sender_id")
     private Member sender;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipient_id")
+    private Member recipient; // 귓속말 수신자 (WHISPER 타입 시 필수)
+
     @Embedded
-    private MessageContent content;
+    private MessageContent messageContent;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false)
     private MessageType type;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "team_color")
+    private TeamColor teamColor; // BLUE, RED
+
+    @Column(name = "sent_at")
     private LocalDateTime sentAt;
+
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt; // 메시지 만료 시간 (TTL)
 
     @Column(name = "edited")
     private boolean edited;
@@ -60,26 +73,31 @@ public class Message extends BaseTimeEntity {
         name = "message_read_status",
         joinColumns = @JoinColumn(name = "message_id")
     )
-    private Set<UUID> readByUsers;
+    private Map<UUID, LocalDateTime> readByUsers;
 
     @Column(name = "deleted")
     private boolean deleted;
+
+    @Column(name = "game_session_id")
+    private UUID gameSessionId; // 게임 세션 ID (Feature 16)
 
     @Builder
     private Message(ChatRoom chatRoom, Member sender, String content, MessageType type) {
         this.chatRoom = chatRoom;
         this.sender = sender;
-        this.content = MessageContent.of(content);
+        this.messageContent = MessageContent.of(content);
         this.type = type;
         this.sentAt = LocalDateTime.now();
         this.edited = false;
-        this.readByUsers = new HashSet<>();
+        this.readByUsers = new HashMap<>();
         this.deleted = false;
     }
 
     // 정적 팩토리 메서드
-    public static Message create(ChatRoom chatRoom, Member sender, String content) {
-        return new Message(chatRoom, sender, content, MessageType.TEXT);
+    public static Message create(ChatRoom chatRoom, Member sender, String content, Duration ttl) {
+        Message message = new Message(chatRoom, sender, content, MessageType.TEXT);
+        message.expiresAt = LocalDateTime.now().plus(ttl);
+        return message;
     }
 
     public static Message createSystem(ChatRoom chatRoom, String content) {
@@ -94,13 +112,13 @@ public class Message extends BaseTimeEntity {
     // 비즈니스 메서드
     public void markAsRead(Member reader) {
         validateParticipant(reader);
-        this.readByUsers.add(reader.getId().getValue());
+        this.readByUsers.put(reader.getId(), LocalDateTime.now());
     }
 
     public void edit(Member editor, String newContent) {
         validateSender(editor);
         validateEditable();
-        this.content = MessageContent.of(newContent);
+        this.messageContent = MessageContent.of(newContent);
         this.edited = true;
     }
 
@@ -113,13 +131,13 @@ public class Message extends BaseTimeEntity {
     // 검증 메서드
     private void validateParticipant(Member reader) {
         if (!chatRoom.hasParticipant(reader)) {
-            throw new UnauthorizedMessageAccessException(this.id, reader.getId().getValue());
+            throw new UnauthorizedMessageAccessException(this.id, reader.getId());
         }
     }
 
     private void validateSender(Member user) {
         if (!isSender(user)) {
-            throw new UnauthorizedMessageModificationException(this.id, user.getId().getValue());
+            throw new UnauthorizedMessageModificationException(this.id, user.getId());
         }
     }
 
@@ -137,7 +155,7 @@ public class Message extends BaseTimeEntity {
 
     // 상태 확인 메서드
     public boolean isReadBy(Member user) {
-        return this.readByUsers.contains(user.getId().getValue());
+        return this.readByUsers.containsKey(user.getId());
     }
 
     public boolean isSender(Member user) {

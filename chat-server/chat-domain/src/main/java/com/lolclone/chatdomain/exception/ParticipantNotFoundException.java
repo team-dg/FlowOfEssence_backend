@@ -1,23 +1,22 @@
 package com.lolclone.chatdomain.exception;
 
-import com.lolclone.chatdomain.domain.chatroom.ChatRoomId;
-import com.lolclone.chatdomain.domain.member.MemberId;
+import java.util.UUID;
 
 public class ParticipantNotFoundException extends RuntimeException {
-    private final MemberId userId;
-    private final ChatRoomId chatRoomId;
+    private final UUID userId;
+    private final UUID chatRoomId;
 
-    public ParticipantNotFoundException(MemberId userId, ChatRoomId chatRoomId) {
+    public ParticipantNotFoundException(UUID userId, UUID chatRoomId) {
         super(String.format("채팅방 참여자를 찾을 수 없습니다. 사용자 ID: %s, 채팅방 ID: %s", userId, chatRoomId));
         this.userId = userId;
         this.chatRoomId = chatRoomId;
     }
 
-    public MemberId getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public ChatRoomId getChatRoomId() {
+    public UUID getChatRoomId() {
         return chatRoomId;
     }
 }

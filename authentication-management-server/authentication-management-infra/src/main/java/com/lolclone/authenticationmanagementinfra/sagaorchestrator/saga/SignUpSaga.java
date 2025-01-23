@@ -24,7 +24,8 @@ public class SignUpSaga implements SimpleSaga<SignUpSagaState>{
                 .step()
                     .invokeParticipant(chatServiceProxy.createUserChat, SignUpSagaState::makeCreateUserChatCommand)
                     .withCompensation(chatServiceProxy.undoCreateUserChat, SignUpSagaState::makeUndoCreateUserChatCommand)
-                    // .invokeParticipant(authenticationServiceProxy.createUser, SignUpSagaState::makeCreateSignUpUserCommand)
+                .step()
+                    .invokeParticipant(authenticationServiceProxy.createUser, SignUpSagaState::makeCreateSignUpUserCommand)
                 .build();
     }
 

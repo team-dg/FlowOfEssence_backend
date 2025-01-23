@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${local-db.postgres.host}:${local-db.postgres.port}/${local-db.postgres.name}

@@ -10,7 +10,7 @@ import com.lolclone.chatdomain.domain.ReportStatus;
 import com.lolclone.chatdomain.domain.member.Member;
 
 public interface ReportRepository extends JpaRepository<Report, Long>{
-    List<Report> findByReporter(Member reporter);
-    List<Report> findByReportedUser(Member reportedUser);
-    List<Report> findByStatus(ReportStatus status);
+    // List<Report> findByReporter(Member reporter);
+    // List<Report> findByReportedUser(Member reportedUser);
+    // List<Report> findByStatus(ReportStatus status);
 }

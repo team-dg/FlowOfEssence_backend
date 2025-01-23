@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Locale;
 
-import com.lolclone.chatdomain.common.BaseTimeEntity;
+import com.lolclone.chatdomain.domain.common.BaseTimeEntity;
 import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.exception.InvalidFriendshipException;
 import com.lolclone.chatdomain.exception.InvalidFriendshipStatusException;
@@ -23,7 +23,11 @@ import lombok.NoArgsConstructor;
  */
 
 @Entity
-@Table(name = "friends")
+@Table(name = "friends",
+    indexes = {
+        @Index(name = "idx_user_status", columnList = "user_id, status"),
+        @Index(name = "idx_friend_status", columnList = "friend_id, status")
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Friend extends BaseTimeEntity {
@@ -41,7 +45,8 @@ public class Friend extends BaseTimeEntity {
     private Member friend;
 
     @Embedded
-    private FriendshipStatus status; // 상태를 값 객체로 분리
+    @AttributeOverride(name = "status", column = @Column(name = "friendship_status"))
+    private FriendshipStatus friendshipStatus; // 상태를 값 객체로 분리
 
     /**
      * 👥 친구와의 마지막 상호작용 시간을 저장하는 필드
@@ -51,37 +56,52 @@ public class Friend extends BaseTimeEntity {
     @Column(name = "last_interaction_at") 
     private LocalDateTime lastInteractionAt;
 
-    @Column(name = "memo")
-    private String memo; 
+    @Column(name = "memo", length = 100)
+    private String memo;
+
+    @Column(name = "previous_status") // 상태 복구를 위한 필드
+    @Enumerated(EnumType.STRING)
+    private FriendshipStatus previousStatus;
 
     @Builder
-    private Friend(Member user, Member friend) {
+    private Friend(Member user, Member friend, FriendshipStatus.Status status) {
         this.id = FriendId.of(user.getId(), friend.getId());
         this.user = user;
         this.friend = friend;
-        this.status = FriendshipStatus.active();
+        this.friendshipStatus = FriendshipStatus.of(status);
     }
 
     // 정적 팩토리 메서드
     public static Friend create(Member user, Member friend) {
         validateFriendship(user, friend);
-        return new Friend(user, friend);
+        Friend userToFriend = new Friend(user, friend, FriendshipStatus.Status.PENDING);
+        Friend friendToUser = new Friend(friend, user, FriendshipStatus.Status.PENDING);
+        return userToFriend;
     }
+
+    // public static Friend createRequest(Member requester, Member target) {
+    //     long pendingCount = friendRepository.countByFriendAndStatus(target, FriendshipStatus.Status.PENDING);
+    //     if (pendingCount >= 50) {
+    //         throw new FriendRequestLimitExceededException();
+    //     }
+    //     return new Friend(requester, target, FriendshipStatus.Status.PENDING);
+    // }
 
     // 비즈니스 메서드
     public void block() {
         validateActiveStatus();
-        this.status = this.status.block();
+        this.friendshipStatus = this.friendshipStatus.block();
     }
 
     public void unblock() {
         validateBlockedStatus();
-        this.status = this.status.unblock();
+        this.friendshipStatus = this.friendshipStatus.unblock();
+        this.friendshipStatus = previousStatus;
     }
 
     public void unfriend() {
         validateActiveStatus();
-        this.status = this.status.unfriend();
+        this.friendshipStatus = this.friendshipStatus.unfriend();
     }
 
     // 검증 메서드
@@ -92,24 +112,24 @@ public class Friend extends BaseTimeEntity {
     }
 
     private void validateActiveStatus() {
-        if (!this.status.isActive()) {
+        if (!this.friendshipStatus.isActive()) {
             throw new InvalidFriendshipStatusException("활성 상태가 아닌 친구 관계입니다.");
         }
     }
 
     private void validateBlockedStatus() {
-        if (!this.status.isBlocked()) {
+        if (!this.friendshipStatus.isBlocked()) {
             throw new InvalidFriendshipStatusException("차단 상태가 아닌 친구 관계입니다.");
         }
     }
 
     // 상태 확인 메서드
     public boolean isActive() {
-        return this.status.isActive();
+        return this.friendshipStatus.isActive();
     }
 
     public boolean isBlocked() {
-        return this.status.isBlocked();
+        return this.friendshipStatus.isBlocked();
     }
 
     public boolean involves(Member member) {
@@ -120,19 +140,20 @@ public class Friend extends BaseTimeEntity {
         this.memo = memo;
     }
 
-    public boolean matches(FriendshipCriteria criteria) {
-        return matchesNickname(criteria.getNicknameKeyword()) &&
-               matchesTag(criteria.getTagKeyword());
-    }
+    //TODO : 쿼리DSL로 동적쿼리로 전환해야 됌 
+    // public boolean matches(FriendshipCriteria criteria) {
+    //     return matchesNickname(criteria.getNicknameKeyword()) &&
+    //            matchesTag(criteria.getTagKeyword());
+    // }
 
-    private boolean matchesNickname(String keyword) {
-        return keyword == null || 
-               friend.getNickname().toLowerCase().contains(keyword.toLowerCase());
-    }
+    // private boolean matchesNickname(String keyword) {
+    //     return keyword == null || 
+    //            friend.getNickname().toLowerCase().contains(keyword.toLowerCase());
+    // }
 
-    private boolean matchesTag(String keyword) {
-        return keyword == null || friend.hasTag(keyword);
-    }
+    // private boolean matchesTag(String keyword) {
+    //     return keyword == null || friend.hasTag(keyword);
+    // }
 
     public static Comparator<Friend> compareByNickname() {
         return (f1, f2) -> Collator.getInstance(Locale.KOREAN)

@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.lolclone.chatdomain.domain.MemberDomainEvent;
 import com.lolclone.chatdomain.domain.member.Member;
-import com.lolclone.chatdomain.domain.member.MemberId;
 import com.lolclone.chatdomain.repository.MemberRepository;
 import com.lolclone.chatinfra.exception.commonexception.NotFoundException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;
@@ -82,13 +81,13 @@ public class MemberService {
 
     @Transactional(propagation = Propagation.MANDATORY)
     public Member findByIdAndCreateMember(final UUID id, final Member member) {
-        return memberRepository.findById(MemberId.of(id)).orElseGet(() -> memberRepository.save(member));
+        return memberRepository.findById(id).orElseGet(() -> memberRepository.save(member));
     }
 
     @Transactional
     public Member createMember(UUID userId, String nickname) {
         Member member = Member.builder()
-                .id(MemberId.of(userId))
+                .id(userId)
                 .nickname(nickname)
                 .build();
 
@@ -101,7 +100,7 @@ public class MemberService {
 
     @Transactional
     public void undoCreateMember(UUID userId) {
-        memberRepository.findById(MemberId.of(userId))
+        memberRepository.findById(userId)
             .ifPresent(member -> {
                 memberRepository.delete(member);
                 List<MemberDomainEvent> events = member.deactivate();

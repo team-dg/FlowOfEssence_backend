@@ -8,9 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.lolclone.chatdomain.domain.friend.Friend;
 import com.lolclone.chatdomain.domain.friendrequest.FriendRequest;
-import com.lolclone.chatdomain.domain.friendrequest.FriendRequestId;
 import com.lolclone.chatdomain.domain.member.Member;
-import com.lolclone.chatdomain.domain.member.MemberId;
 import com.lolclone.chatdomain.exception.UnauthorizedFriendRequestException;
 import com.lolclone.chatdomain.repository.FriendRequestRepository;
 import com.lolclone.chatdomain.repository.MemberRepository;

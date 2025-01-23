@@ -3,6 +3,7 @@ package com.lolclone.chatdomain.domain.member;
 import static java.util.Collections.singletonList;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.lolclone.chatdomain.domain.MemberCreatedEvent;
 import com.lolclone.chatdomain.domain.MemberDomainEvent;
@@ -38,18 +39,20 @@ public class MemberStateInfo {
         return info;
     }
 
-    public List<MemberDomainEvent> activate(MemberId memberId) {
+    public List<MemberDomainEvent> activate(UUID memberId) {
         validateStateTransition(MemberState.ACTIVE);
         this.previousState = this.state;
         this.state = MemberState.ACTIVE;
-        return singletonList(new MemberCreatedEvent(memberId.getValue()));
+        this.status = MemberStatus.ONLINE;
+        return singletonList(new MemberCreatedEvent(memberId));
     }
 
-    public List<MemberDomainEvent> deactivate(MemberId memberId) {
+    public List<MemberDomainEvent> deactivate(UUID memberId) {
         validateStateTransition(MemberState.DELETED);
         this.previousState = this.state;
         this.state = MemberState.DELETED;
-        return singletonList(new UndoCreateMemberEvent(memberId.getValue()));
+        this.status = MemberStatus.OFFLINE;
+        return singletonList(new UndoCreateMemberEvent(memberId));
     }
 
     private void validateStateTransition(MemberState newState) {

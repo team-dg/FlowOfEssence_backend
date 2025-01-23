@@ -1,29 +1,33 @@
 package com.lolclone.chatdomain.domain.gameinvite;
 
-import com.lolclone.chatdomain.common.BaseTimeEntity;
+import java.util.UUID;
+
+import com.lolclone.chatdomain.domain.MemberStatus;
+import com.lolclone.chatdomain.domain.common.BaseTimeEntity;
+import com.lolclone.chatdomain.domain.member.GameType;
 import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.exception.InvalidGameInviteException;
 import com.lolclone.chatdomain.exception.InvalidGameInviteStatusException;
 import com.lolclone.chatdomain.exception.UnauthorizedGameInviteException;
 
-import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "game_invites")
+@Table(name = "game_invites",
+    indexes = {
+        @Index(name = "idx_invitee_status", columnList = "invitee_id, status"),
+        @Index(name = "idx_expires_at", columnList = "expires_at")
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GameInvite extends BaseTimeEntity {
-    @EmbeddedId
-    private GameInviteId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "invite_id")
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inviter_id")
@@ -39,14 +43,35 @@ public class GameInvite extends BaseTimeEntity {
     @Embedded
     private GameInviteMetadata metadata;
 
+    @Column(name = "game_session_id") // ✅ 게임 세션 연결
+    private UUID gameSessionId;
+
+    @Column(name = "chat_room_id")    // ✅ 게임 채팅방 연결
+    private UUID chatRoomId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "game_type")
+    private GameType gameType;
+
+    // public void deleteGameChatMessages(UUID gameSessionId) {
+    //     messageRepository.deleteByGameSessionId(gameSessionId);
+    // }
+
     private GameInvite(Member inviter, Member invitee) {
         validateInvite(inviter, invitee);
-        this.id = GameInviteId.newId();
         this.inviter = inviter;
         this.invitee = invitee;
         this.status = GameInviteStatus.pending();
         this.metadata = GameInviteMetadata.init();
     }
+
+    // @Scheduled(fixedRate = 300_000) // 5분마다 실행
+    // public void expireOldInvites() {
+    //     List<GameInvite> expired = repository.findByStatusAndExpiresAtBefore(
+    //         Status.PENDING, LocalDateTime.now()
+    //     );
+    //     expired.forEach(GameInvite::expire);
+    // }
 
     public static GameInvite create(Member inviter, Member invitee) {
         return new GameInvite(inviter, invitee);
@@ -82,7 +107,7 @@ public class GameInvite extends BaseTimeEntity {
         if (inviter.equals(invitee)) {
             throw new InvalidGameInviteException("자기 자신을 게임에 초대할 수 없습니다.");
         }
-        if (!inviter.isOnline() || !invitee.isOnline()) {
+        if (invitee.getStateInfo().getStatus() == MemberStatus.OFFLINE) {
             throw new InvalidGameInviteException("오프라인 상태의 사용자와는 게임을 할 수 없습니다.");
         }
     }

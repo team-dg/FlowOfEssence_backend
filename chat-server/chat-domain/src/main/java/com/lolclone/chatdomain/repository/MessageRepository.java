@@ -2,12 +2,11 @@ package com.lolclone.chatdomain.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.lolclone.chatdomain.domain.chatroom.ChatRoom;
-import com.lolclone.chatdomain.domain.chatroom.ChatRoomId;
-import com.lolclone.chatdomain.domain.member.MemberId;
 import com.lolclone.chatdomain.domain.message.Message;
 
 public interface MessageRepository extends JpaRepository<Message, Long>{
@@ -35,11 +34,11 @@ public interface MessageRepository extends JpaRepository<Message, Long>{
 
     // long countByChatRoomId(UUID roomId);
 
-    List<Message> findByChatRoomId(ChatRoomId chatRoomId);
+    // List<Message> findByChatRoomId(UUID chatRoomId);
 
-    List<Message> findByChatRoomAndCreatedAtBetween(ChatRoom chatRoom, LocalDateTime startOfDay, LocalDateTime endOfDay);
+    // List<Message> findByChatRoomAndCreatedAtBetween(ChatRoom chatRoom, LocalDateTime startOfDay, LocalDateTime endOfDay);
 
-    void deleteAllByCreatedAtBefore(LocalDateTime threshold);
+    // void deleteAllByCreatedAtBefore(LocalDateTime threshold);
 
-    long countUnreadMessages(ChatRoomId roomId, MemberId userId);
+    // long countUnreadMessages(UUID roomId, UUID userId);
 }

@@ -1,4 +1,4 @@
-package com.lolclone.chatdomain.common;
+package com.lolclone.chatdomain.domain.common;
 
 import java.time.LocalDateTime;
 

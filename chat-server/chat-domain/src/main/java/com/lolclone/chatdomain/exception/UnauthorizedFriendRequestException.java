@@ -1,16 +1,16 @@
 package com.lolclone.chatdomain.exception;
 
-import com.lolclone.chatdomain.domain.friendrequest.FriendRequestId;
+import java.util.UUID;
 
 public class UnauthorizedFriendRequestException extends RuntimeException {
-    private final FriendRequestId friendRequestId;
+    private final UUID friendRequestId;
 
-    public UnauthorizedFriendRequestException(String message, FriendRequestId friendRequestId) {
+    public UnauthorizedFriendRequestException(String message, UUID friendRequestId) {
         super(message);
         this.friendRequestId = friendRequestId;
     }
 
-    public FriendRequestId getFriendRequestId() {
+    public UUID getFriendRequestId() {
         return friendRequestId;
     }
 }

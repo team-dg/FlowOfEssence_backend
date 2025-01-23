@@ -1,17 +1,16 @@
 package com.lolclone.chatserviceapi.dto;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-import com.lolclone.chatdomain.domain.friendrequest.FriendRequestId;
 import com.lolclone.chatdomain.domain.friendrequest.FriendRequestStatus;
-import com.lolclone.chatdomain.domain.member.MemberId;
 
 import lombok.Getter;
 
 @Getter
 public class FriendRequestResponse {
-    private FriendRequestId requestId;
-    private MemberId requesterId;
+    private UUID requestId;
+    private UUID requesterId;
     private String requesterNickname;
     private LocalDateTime requestedAt;
     private FriendRequestStatus status;

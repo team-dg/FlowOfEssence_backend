@@ -1,16 +1,16 @@
 package com.lolclone.chatdomain.exception;
 
-import com.lolclone.chatdomain.domain.gameinvite.GameInviteId;
+import java.util.UUID;
 
 public class InvalidGameInviteStatusException extends RuntimeException {
-    private final GameInviteId gameInviteId;
+    private final UUID gameInviteId;
 
-    public InvalidGameInviteStatusException(String message, GameInviteId gameInviteId) {
+    public InvalidGameInviteStatusException(String message, UUID gameInviteId) {
         super(message);
         this.gameInviteId = gameInviteId;
     }
 
-    public GameInviteId getGameInviteId() {
+    public UUID getGameInviteId() {
         return gameInviteId;
     }
 }

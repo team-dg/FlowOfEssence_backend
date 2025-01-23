@@ -4,12 +4,14 @@ import static io.eventuate.tram.commands.consumer.CommandHandlerReplyBuilder.wit
 
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lolclone.authenticationmanagementinfra.service.application.UserAuthService;
 import com.lolclone.authenticationmanagementinfra.service.domain.MemberService;
 import com.lolclone.authenticationmanagementserviceapi.command.CreateSignUpUserCommand;
 import com.lolclone.authenticationmanagementserviceapi.command.UndoCreateSignUpUserCommand;
+import com.lolclone.authenticationmanagementserviceapi.event.SignUpCompletedEvent;
 import com.lolclone.commonmodule.channel.ChannelNames;
 
 import io.eventuate.tram.commands.consumer.CommandHandlers;
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthenticationCommandHandlers {
     private final UserAuthService userAuthService;
     private final MemberService memberService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CommandHandlers commandHandlers() {
         return SagaCommandHandlersBuilder
@@ -36,15 +39,14 @@ public class AuthenticationCommandHandlers {
     public Message handleCreateSignUpUserCommand(CommandMessage<CreateSignUpUserCommand> cm) {
         UUID userId = cm.getCommand().getUserId();
         memberService.createSignUpUser(userId);
+        eventPublisher.publishEvent(new SignUpCompletedEvent(userId));
         return withSuccess();
     }
 
     @Transactional
     public Message handleUndoCreateSignUpUserCommand(CommandMessage<UndoCreateSignUpUserCommand> cm) {
         UUID userId = cm.getCommand().getUserId();
-        UUID refreshTokenId = cm.getCommand().getRefreshTokenId();
         userAuthService.deleteAccount(userId);
-        userAuthService.logout(userId, refreshTokenId);
         return withSuccess();
     }
 }

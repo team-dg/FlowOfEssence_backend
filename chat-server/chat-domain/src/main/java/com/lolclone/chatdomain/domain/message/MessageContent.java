@@ -15,11 +15,11 @@ public class MessageContent {
     private static final int MAX_LENGTH = 500;
 
     @Column(name = "content", nullable = false, length = MAX_LENGTH)
-    private String value;
+    private String content;
 
     private MessageContent(String content) {
         validateContent(content);
-        this.value = content;
+        this.content = content;
     }
 
     public static MessageContent of(String content) {

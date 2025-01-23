@@ -1,11 +1,14 @@
 package com.lolclone.chatdomain.domain.friendrequest;
 
-import com.lolclone.chatdomain.common.BaseTimeEntity;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import com.lolclone.chatdomain.domain.common.BaseTimeEntity;
 import com.lolclone.chatdomain.domain.friend.Friend;
 import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.exception.InvalidFriendRequestException;
 import com.lolclone.chatdomain.exception.InvalidFriendRequestStatusException;
-import com.lolclone.chatdomain.exception.InvalidFriendRequestTypeException;
 import com.lolclone.chatdomain.exception.UnauthorizedFriendRequestException;
 
 import jakarta.persistence.*;
@@ -19,12 +22,17 @@ import lombok.NoArgsConstructor;
  * 친구 요청 목록 조회
  */
 @Entity
-@Table(name = "friend_requests")
+@Table(name = "friend_requests",
+    indexes = {
+        @Index(name = "idx_receiver_status", columnList = "receiver_id, status")
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FriendRequest extends BaseTimeEntity {
-    @EmbeddedId
-    private FriendRequestId id; // ID를 값 객체로 분리
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "request_id")
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id")
@@ -37,20 +45,15 @@ public class FriendRequest extends BaseTimeEntity {
     @Embedded
     private FriendRequestStatus status; // 상태를 값 객체로 분리
 
-    @Embedded
-    private FriendRequestMetadata metadata; // 메타데이터를 값 객체로 분리
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "request_type", nullable = false)
-    private FriendRequestType requestType = FriendRequestType.FRIEND;
+    @Column(name = "processed_at")
+    private LocalDateTime processedAt;
 
     private FriendRequest(Member requester, Member receiver) {
         validateRequest(requester, receiver);
-        this.id = FriendRequestId.newId();
         this.requester = requester;
         this.receiver = receiver;
         this.status = FriendRequestStatus.pending();
-        this.metadata = FriendRequestMetadata.init();
+        this.processedAt = null;
     }
 
     // 정적 팩토리 메서드
@@ -58,50 +61,39 @@ public class FriendRequest extends BaseTimeEntity {
         return new FriendRequest(requester, receiver);
     }
 
+    // 이는 서비스 로직이므로 밖으로 빼기
+    // public static FriendRequest create(Member requester, Member receiver) {
+    //     FriendRequest request = new FriendRequest(requester, receiver);
+    //     notificationService.send(
+    //         receiver, 
+    //         NotificationType.FRIEND_REQUEST, 
+    //         requester.getNickname() + "님이 친구 요청을 보냈습니다."
+    //     );
+    //     return request;
+    // }
+
     // 비즈니스 메서드
-    public Friend accept() {
+    public List<Friend> accept() {
         validatePendingStatus();
         this.status = this.status.accept();
-        this.metadata = this.metadata.updateProcessedTime();
-        return Friend.create(requester, receiver);
+        updateProcessedTime();
+        return List.of(
+            Friend.create(requester, receiver), 
+            Friend.create(receiver, requester)
+        );
     }
 
     public void reject() {
         validatePendingStatus();
         this.status = this.status.reject();
-        this.metadata = this.metadata.updateProcessedTime();
+        updateProcessedTime();
     }
 
     public void cancel() {
         validatePendingStatus();
         validateRequester(requester);
         this.status = this.status.cancel();
-        this.metadata = this.metadata.updateProcessedTime();
-    }
-
-    public static FriendRequest createGameInvite(Member requester, Member receiver) {
-        FriendRequest request = new FriendRequest(requester, receiver);
-        request.requestType = FriendRequestType.GAME_INVITE;
-        return request;
-    }
-
-    public Friend acceptGameInvite() {
-        validateGameInvite();
-        validatePendingStatus();
-        this.status = this.status.accept();
-        return Friend.create(requester, receiver);
-    }
-
-    public void rejectGameInvite() {
-        validateGameInvite();
-        validatePendingStatus();
-        this.status = this.status.reject();
-    }
-
-    private void validateGameInvite() {
-        if (this.requestType != FriendRequestType.GAME_INVITE) {
-            throw new InvalidFriendRequestTypeException("게임 초대 요청이 아닙니다.");
-        }
+        updateProcessedTime();
     }
 
     // 검증 메서드
@@ -142,5 +134,13 @@ public class FriendRequest extends BaseTimeEntity {
 
     public boolean involvesUser(Member user) {
         return this.requester.equals(user) || this.receiver.equals(user);
+    }
+
+    public void updateProcessedTime() {
+        this.processedAt = LocalDateTime.now();
+    }
+
+    public boolean isProcessed() {
+        return processedAt != null;
     }
 }

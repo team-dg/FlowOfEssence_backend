@@ -7,9 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.lolclone.chatdomain.domain.chatparticipant.ChatParticipant;
 import com.lolclone.chatdomain.domain.chatroom.ChatRoom;
-import com.lolclone.chatdomain.domain.chatroom.ChatRoomId;
 import com.lolclone.chatdomain.domain.member.Member;
-import com.lolclone.chatdomain.domain.member.MemberId;
 import com.lolclone.chatdomain.domain.message.Message;
 import com.lolclone.chatdomain.exception.ParticipantNotFoundException;
 import com.lolclone.chatdomain.repository.ChatParticipantRepository;

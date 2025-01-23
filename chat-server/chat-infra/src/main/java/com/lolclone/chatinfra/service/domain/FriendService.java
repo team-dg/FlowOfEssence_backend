@@ -1,17 +1,19 @@
 package com.lolclone.chatinfra.service.domain;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lolclone.chatdomain.domain.friend.Friend;
-import com.lolclone.chatdomain.domain.friend.FriendshipCriteria;
 import com.lolclone.chatdomain.domain.member.Member;
-import com.lolclone.chatdomain.domain.member.MemberId;
 import com.lolclone.chatdomain.repository.MemberRepository;
 import com.lolclone.chatdomain.repository.friend.FriendRepository;
+import com.lolclone.chatdomain.repository.friend.query.FriendChatInfoDto;
 import com.lolclone.chatinfra.exception.commonexception.BadRequestException;
 import com.lolclone.chatinfra.exception.commonexception.NotFoundException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;
@@ -26,6 +28,32 @@ import lombok.extern.slf4j.Slf4j;
 public class FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
+
+    private static final int MAX_FRIEND_COUNT = 300;
+
+    // 내부 헬퍼 메서드
+    private Member getOrElse(UUID userId) {
+        return memberRepository.findById(userId).orElseThrow(() -> new NotFoundException(ExceptionType.MEMBER_NOT_FOUND));
+    }
+
+    public Page<FriendChatInfoDto> getFriendListByNickname(
+        final UUID userId, 
+        final boolean sortByNickname, 
+        final Pageable pageable
+    ) {
+        getOrElse(userId);
+        validateFriendCount(userId);
+        return friendRepository.findFriendByNickname(userId, sortByNickname, pageable);
+    }
+
+    private void validateFriendCount(UUID userId) {
+        long totalCount = friendRepository.countFriends(userId);
+        if (totalCount > MAX_FRIEND_COUNT) {
+            throw new IllegalStateException("친구 수가 최대 제한(" + MAX_FRIEND_COUNT + "명)을 초과했습니다.");
+        }
+    }
+
+
 
     // /**
     //  * 친구 관계 생성
