@@ -6,12 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.lolclone.chatdomain.repository.friend.query.FriendChatInfoDto;
+import com.lolclone.chatdomain.repository.friend.query.FriendSortCondition;
+import com.querydsl.jpa.impl.JPAQuery;
 
 public interface QuerydslFriendRepository {
     // 전체 친구 수 조회
-    long countFriends(UUID userId);
-    // 닉네임 기준 친구 목록 조회
-    Page<FriendChatInfoDto> findFriendByNickname(UUID userId, boolean sortByNickname, Pageable pageable);
-    // 온라인 상태 기준 친구 목록 조회
-    Page<FriendChatInfoDto> findFriendsByStatus(UUID userId, boolean sortByStatus, Pageable pageable);
+    JPAQuery<Long> countFriends(UUID userId);
+    // 친구 목록 조회 (닉네임 또는 상태 정렬 지원)
+    Page<FriendChatInfoDto> findFriends(UUID userId, FriendSortCondition sortCondition, Pageable pageable);
 }

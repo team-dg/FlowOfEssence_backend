@@ -24,6 +24,7 @@ import com.lolclone.chatdomain.domain.message.Message;
 import com.lolclone.chatdomain.domain.message.MessageType;
 import com.lolclone.chatdomain.repository.friend.FriendRepository;
 import com.lolclone.chatdomain.repository.friend.query.FriendChatInfoDto;
+import com.lolclone.chatdomain.repository.friend.query.FriendSortCondition;
 import com.lolclone.chatinfra.exception.commonexception.BadRequestException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;
 import com.lolclone.chatinfra.service.domain.ChatParticipantService;
@@ -55,10 +56,10 @@ public class ChatService {
 
     public Page<FriendChatInfoDto> getFriendListByNickname(
         final UUID userId, 
-        final boolean sortByNickname, 
+        final FriendSortCondition sortCondition,
         final Pageable pageable
     ) {
-        return friendService.getFriendListByNickname(userId, sortByNickname, pageable);
+        return friendService.getFriendList(userId, sortCondition, pageable);
     }
 
 

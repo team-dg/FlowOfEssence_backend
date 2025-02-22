@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lolclone.chatdomain.repository.friend.query.FriendChatInfoDto;
+import com.lolclone.chatdomain.repository.friend.query.FriendSortCondition;
 import com.lolclone.chatinfra.service.application.ChatService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class ChatController {
     private final ChatService chatService;
 
     /**
+     * 🟢 온라인 상태 정렬 여부 선택 가능
      * 📋 닉네임 기준으로 친구 목록을 페이징하여 조회 (정렬 옵션 지원)
      * ⚠️ 최대 친구 수: 300명
      * 🚫 차단된 친구는 목록에서 제외
@@ -31,26 +33,16 @@ public class ChatController {
     public ResponseEntity<Page<FriendChatInfoDto>> getFriendListSortedByNickname(
         @RequestParam("userId") final UUID userId,
         @RequestParam(defaultValue = "false") final boolean sortByNickname,
+        @RequestParam(defaultValue = "false") final boolean sortByStatus,
         @PageableDefault(size = 20) final Pageable pageable
     ) {
-        Page<FriendChatInfoDto> friendChatInfos = chatService.getFriendListByNickname(userId, sortByNickname, pageable);
+        FriendSortCondition sortCondition = FriendSortCondition.builder()
+                .sortByNickname(sortByNickname)
+                .sortByStatus(sortByStatus)
+                .build();
+        Page<FriendChatInfoDto> friendChatInfos = chatService.getFriendListByNickname(userId, sortCondition, pageable);
         return ResponseEntity.ok().body(friendChatInfos);
     }
-
-    /**
-     * 📋 온라인 상태 기준으로 친구 목록을 페이징하여 조회 (정렬 옵션 지원)
-     * ⚠️ 최대 친구 수: 300명
-     * 🚫 차단된 친구는 목록에서 제외
-     * 🟢 온라인 상태 정렬 여부 선택 가능
-     */
-    // @GetMapping("/friends/by-status")
-    // public ResponseEntity<Page<FriendChatInfoDto>> getFriendListByStatus(
-    //         @RequestParam("userId") final UUID userId,
-    //         @RequestParam(defaultValue = "false") final boolean sortByStatus,
-    //         @PageableDefault(size = 20) final Pageable pageable) {
-    //     Page<FriendChatInfoDto> friendChatInfos = chatService.getFriendListByStatus(userId, sortByStatus, pageable);
-    //     return ResponseEntity.ok().body(friendChatInfos);
-    // }
 
     // /**
     // * 친구 목록 상태별 조회 (온라인/오프라인 등)

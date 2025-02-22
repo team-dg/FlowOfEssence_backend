@@ -14,6 +14,7 @@ import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.repository.MemberRepository;
 import com.lolclone.chatdomain.repository.friend.FriendRepository;
 import com.lolclone.chatdomain.repository.friend.query.FriendChatInfoDto;
+import com.lolclone.chatdomain.repository.friend.query.FriendSortCondition;
 import com.lolclone.chatinfra.exception.commonexception.BadRequestException;
 import com.lolclone.chatinfra.exception.commonexception.NotFoundException;
 import com.lolclone.chatinfra.exception.domain.ExceptionType;
@@ -36,18 +37,18 @@ public class FriendService {
         return memberRepository.findById(userId).orElseThrow(() -> new NotFoundException(ExceptionType.MEMBER_NOT_FOUND));
     }
 
-    public Page<FriendChatInfoDto> getFriendListByNickname(
+    public Page<FriendChatInfoDto> getFriendList(
         final UUID userId, 
-        final boolean sortByNickname, 
+        final FriendSortCondition sortCondition, 
         final Pageable pageable
     ) {
         getOrElse(userId);
         validateFriendCount(userId);
-        return friendRepository.findFriendByNickname(userId, sortByNickname, pageable);
+        return friendRepository.findFriends(userId, sortCondition, pageable);
     }
 
     private void validateFriendCount(UUID userId) {
-        long totalCount = friendRepository.countFriends(userId);
+        long totalCount = friendRepository.countFriends(userId).fetchOne();
         if (totalCount > MAX_FRIEND_COUNT) {
             throw new IllegalStateException("친구 수가 최대 제한(" + MAX_FRIEND_COUNT + "명)을 초과했습니다.");
         }
