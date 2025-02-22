@@ -26,6 +26,8 @@ dependencies {
     api "io.eventuate.tram.core:eventuate-tram-spring-producer-jdbc:${eventuateTramVersion}"
     // Eventuate Tram Aggregate Domain Events
     api "io.eventuate.tram.core:eventuate-tram-aggregate-domain-events:${eventuateTramVersion}"
+    // Eventuate Tram Consumer JDBC
+    api "io.eventuate.tram.core:eventuate-tram-spring-consumer-jdbc:${eventuateTramVersion}"
     //Validation
     api 'org.springframework.boot:spring-boot-starter-validation'
     // Jackson
@@ -36,4 +38,6 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-annotations:2.15.3'
     // Brave
     api 'io.micrometer:micrometer-tracing-bridge-brave'
+    // JUnit
+    api 'org.springframework.boot:spring-boot-starter-test'
 }

@@ -9,13 +9,13 @@ import io.eventuate.tram.sagas.simpledsl.CommandEndpoint;
 import io.eventuate.tram.sagas.simpledsl.CommandEndpointBuilder;
 
 public class AuthenticationServiceProxy {
-    public final CommandEndpoint<CreateSignUpUserCommand> createUser = CommandEndpointBuilder
+      public final CommandEndpoint<CreateSignUpUserCommand> createUser = CommandEndpointBuilder
           .forCommand(CreateSignUpUserCommand.class)
           .withChannel(ChannelNames.AUTHENTICATION_SERVICE)
           .withReply(Success.class)
           .build();
 
-    public final CommandEndpoint<UndoCreateSignUpUserCommand> undoCreateUser = CommandEndpointBuilder
+      public final CommandEndpoint<UndoCreateSignUpUserCommand> undoCreateUser = CommandEndpointBuilder
             .forCommand(UndoCreateSignUpUserCommand.class)
             .withChannel(ChannelNames.AUTHENTICATION_SERVICE)
             .withReply(Success.class)

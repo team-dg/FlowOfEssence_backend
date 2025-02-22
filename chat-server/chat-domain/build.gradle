@@ -1,0 +1,29 @@
+dependencies {
+    //Common module
+    api project(':common-module')
+    //QueryDSL
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+}
+
+def generated = 'src/main/generated'
+
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+sourceSets {
+    main.java.srcDirs += [ generated ]
+}
+
+clean {
+    delete file(generated)
+}
+
+test {
+    enabled = false
+}
+
+bootJar { enabled = false }
+jar { enabled = true }

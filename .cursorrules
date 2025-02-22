@@ -1,0 +1,161 @@
+# 1. 프로젝트 표준 정의 (주석으로 명시)
+
+- 이 프로젝트는 Spring Boot, JPA, Querydsl을 사용합니다.
+- 도메인 주도 설계(DDD)와 클린 아키텍처를 기반으로 합니다.
+- RESTful API 설계 원칙을 준수합니다.
+
+# 2. 일반 규칙
+
+# 모든 Java 파일에 적용되는 규칙
+*.java {
+  # 4개의 공백 대신 2개의 공백으로 들여쓰기
+  indent: 2
+
+  # 클래스, 메서드, 변수 명명 규칙
+  +@naming: class: PascalCase
+  +@naming: method: camelCase
+  +@naming: variable: camelCase
+
+  # 불필요한 import 제거
+  -@import: unused
+
+  # System.out.println 사용 금지 (대신 로깅 라이브러리 사용)
+  -System.out.println
+
+  # TODO 주석 사용 시, 사용자 이름과 날짜 추가 (예: // TODO(사용자 이름, YYYY-MM-DD): 해야 할 일)
+  +@todo: format: // TODO($USER, $DATE): $BODY
+
+  # 각 파일 상단에 저작권 정보 추가
+  +@header: // Copyright (c) $YEAR, $OWNER. All rights reserved.
+
+  # Spring Bean 이름은 소문자로 시작
+  +@bean: name: lowercase
+  
+  # 모든 파일에서 final 키워드를 적극 사용할 것
+  +final
+
+  # 모든 파일에서 `System.out.println` 대신 `log.info`, `log.error` 등을 사용합니다.
+  -System.out.println
+  +log.info
+  +log.error
+}
+
+# 3. 특정 파일/디렉토리 규칙
+
+# Controller 클래스에 대한 규칙
+*Controller.java {
+  # @RestController 어노테이션 사용 강제
+  +@annotation: RestController
+
+  # @RequestMapping 어노테이션 사용 강제
+  +@annotation: RequestMapping
+
+  # API 엔드포인트 경로는 소문자와 하이픈 사용 (예: /api/users, /api/products/product-name)
+  +@requestmapping: path: lowercase, hyphen
+
+  # 메서드 이름은 동사로 시작 (예: getUser, createUser)
+  +@naming: method: verb + noun
+}
+
+# Service 클래스에 대한 규칙
+*Service.java {
+  # @Service 어노테이션 사용 강제
+  +@annotation: Service
+
+  # 메서드 이름은 동사로 시작 (예: getUser, createUser)
+  +@naming: method: verb + noun
+}
+
+# Repository 클래스에 대한 규칙
+*Repository.java {
+  # @Repository 어노테이션 사용 강제
+  +@annotation: Repository
+
+  # 인터페이스로 작성
+  +@interface
+}
+
+# DTO 클래스에 대한 규칙
+*DTO.java {
+  # 불변 객체로 작성
+  +@immutable
+  
+  # 모든 필드는 private final 로 작성합니다
+  +private final
+}
+
+# 테스트 코드에 대한 규칙
+*Test.java {
+  # JUnit 5와 Mockito 사용 강제
+  +@import: org.junit.jupiter.api.*
+  +@import: org.mockito.*
+
+  # 테스트 메서드 이름은 `test`_`should`_`when` 형식 사용 (예: test_createUser_should_ReturnCreatedUser_when_ValidInput)
+  +@naming: method: test_should_when
+}
+
+# 4. Cursor AI 기능 활용
+
+# 전역 규칙
+* {
+  # AI에게 코드 생성 시, 테스트 코드도 함께 생성하도록 지시
+  +@test: generate
+
+  # AI에게 보안 취약점을 고려하여 코드를 생성하도록 지시
+  +@보안
+
+  # AI에게 성능을 고려하여 코드를 생성하도록 지시
+  +@성능
+
+  # AI에게 주석에 이모지 사용하도록 지시
+  +@emoji
+
+  # AI에게 간결한 코드 생성을 요청
+  +@compact
+
+  # AI에게 모범사례를 따르도록 요청
+  +@best-practice
+}
+
+# 5. 주석 활용
+각 규칙에 대한 설명을 주석으로 추가하여, 다른 개발자들이 쉽게 이해할 수 있도록 합니다.
+예를 들어, 특정 라이브러리를 사용 금지하는 이유, 특정 패턴을 강제하는 이유 등을 설명합니다.
+
+## Git 커밋 메시지 작성 규칙
+
+**포멧: **
+
+```
+<type>: <subject>
+<body>
+```
+
+**커밋 타입 (Type): **
+- feat: 새로운 기능 추가하여
+- fix: 버그 수정
+- docs: 문서 수정
+- style: 코드 포멧팅, 세미콜론 누락, 코드 변경이 없는 경우
+- refactor: 코드 리팩토링
+- test: 테스트 코드 추가, 리펙토링 테스트 코드 추가
+- chore: 빌드 업무 수정
+
+**제목 (Subject): **
+- 변경 사항에 대한 간단한 설명
+- 50자 이내로 작성
+- 마침표 없이 작성
+- 현재 시제 사용
+
+**본문 (Body): **
+- 변경 사항에 대한 자세한 설명
+- 어떻게 보다는 무엇을, 왜 변경했는지 설명
+- 여러 줄의 메시지를 작성할 땐 "-"로 구분
+
+예시:
+```
+feat: 로그인 화면 키보드 UX 개선
+- TextInput ref를 사용하여 자동 포커스 기능 추가
+- returnKeyType 설정으로 키보드 엔터키 동작 개선
+- 전화번호 입력 후 자동으로 비밀번호 입력창으로 포커스 이동
+- 비밀번호 입력 후 엔터키로 로그인 가능하도록 개선
+```
+

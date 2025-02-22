@@ -3,14 +3,15 @@ dependencies {
     implementation project(':authentication-management-server:authentication-management-service-api')
     //User-Service-API
     implementation project(":user-server:user-service-api")
+    //Chat-Service-API
+    implementation project(":chat-server:chat-service-api")
     // Jwt
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 test {
     enabled = false
 }
-
-bootJar { enabled = false }
-jar { enabled = true }

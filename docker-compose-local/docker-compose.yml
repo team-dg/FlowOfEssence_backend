@@ -1,6 +1,26 @@
 version: '3.7'
 
 services:
+  # Chat Server Database
+  chat-postgres:
+    image: eventuateio/eventuate-tram-sagas-postgres:${EVENTUATE_COMMON_VERSION}
+    container_name: chat-postgres
+    environment:
+      POSTGRES_USER: donghyeon
+      POSTGRES_PASSWORD: adzc1973
+      POSTGRES_DB: chat_server
+      USE_DB_ID: "true"
+    command: 
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+    ports:
+      - "5433:5432"
+    volumes:
+      - chat_postgres_data:/var/lib/postgresql/data
+    networks:
+      - eventuate-network
+
   # User Server Database
   user-postgres:
     image: eventuateio/eventuate-tram-sagas-postgres:${EVENTUATE_COMMON_VERSION}
@@ -109,6 +129,16 @@ services:
       EVENTUATE_CDC_READER_READER2_OFFSETSTORAGETOPICNAME: db.history.user_service
       EVENTUATE_CDC_READER_READER2_OUTBOXID: 2
 
+      EVENTUATE_CDC_READER_READER3_TYPE: postgres-wal
+      EVENTUATE_CDC_READER_READER3_DATASOURCEURL: jdbc:postgresql://chat-postgres:5432/chat_server
+      EVENTUATE_CDC_READER_READER3_MONITORINGSCHEMA: eventuate
+      EVENTUATE_CDC_READER_READER3_DATASOURCEUSERNAME: donghyeon
+      EVENTUATE_CDC_READER_READER3_DATASOURCEPASSWORD: adzc1973
+      EVENTUATE_CDC_READER_READER3_DATASOURCEDRIVERCLASSNAME: org.postgresql.Driver
+      EVENTUATE_CDC_READER_READER3_LEADERSHIPLOCKPATH: /eventuate/cdc/leader/chat_service
+      EVENTUATE_CDC_READER_READER3_OFFSETSTORAGETOPICNAME: db.history.chat_service
+      EVENTUATE_CDC_READER_READER3_OUTBOXID: 3
+
       EVENTUATE_CDC_PIPELINE_PIPELINE1_TYPE: eventuate-tram
       EVENTUATE_CDC_PIPELINE_PIPELINE1_READER: reader1
       EVENTUATE_CDC_PIPELINE_PIPELINE1_EVENTUATEDATABASESCHEMA: eventuate
@@ -116,6 +146,10 @@ services:
       EVENTUATE_CDC_PIPELINE_PIPELINE2_TYPE: eventuate-tram
       EVENTUATE_CDC_PIPELINE_PIPELINE2_READER: reader2
       EVENTUATE_CDC_PIPELINE_PIPELINE2_EVENTUATEDATABASESCHEMA: eventuate
+
+      EVENTUATE_CDC_PIPELINE_PIPELINE3_TYPE: eventuate-tram
+      EVENTUATE_CDC_PIPELINE_PIPELINE3_READER: reader3
+      EVENTUATE_CDC_PIPELINE_PIPELINE3_EVENTUATEDATABASESCHEMA: eventuate
 
       EVENTUATE_CDC_POSTGRES_REPLICATION_SLOT_NAME: eventuate_slot
       EVENTUATE_CDC_POSTGRES_REPLICATION_SLOT_DROP_ON_STOP: "false"
@@ -131,6 +165,7 @@ services:
 volumes:
   user_postgres_data:
   auth_postgres_data:
+  chat_postgres_data:
   cdc_postgres_data:
 
 networks:

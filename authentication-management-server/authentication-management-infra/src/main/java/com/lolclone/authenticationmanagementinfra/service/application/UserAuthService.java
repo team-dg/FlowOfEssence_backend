@@ -36,12 +36,11 @@ public class UserAuthService {
     private final SagaManager<SignUpSagaState> signUpSagaManager;
 
     @Transactional(propagation = Propagation.MANDATORY)
-    public LoginResult oAuth2Login(UserInfo userInfo) {
+    public Member oAuth2Login(UserInfo userInfo) {
         Member savedMember = memberService.findMemberBySocialInfo(userInfo).orElseGet(() -> memberService.registerSocialMember(userInfo));
-        JwtRefreshToken jwtRefreshToken = tokenManagementService.saveRefreshToken(savedMember.getId());
-        SignUpSagaState data = new SignUpSagaState(savedMember.getId(), savedMember.getNickname(), jwtRefreshToken.getId());
+        SignUpSagaState data = new SignUpSagaState(savedMember.getId(), savedMember.getNickname());
         signUpSagaManager.create(data, Member.class, savedMember.getId());
-        return new LoginResult(savedMember.getId(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
+        return savedMember;
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
@@ -49,16 +48,22 @@ public class UserAuthService {
         Member member = memberService.findMemberByUsername(loginRequest.username()).orElseThrow(() -> new UnauthorizedException(ExceptionType.INVALID_CREDENTIALS));
         memberService.verifyPassword(member, loginRequest.password());
         JwtRefreshToken jwtRefreshToken = tokenManagementService.saveRefreshToken(member.getId());
-        return new LoginResult(member.getId(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
+        return new LoginResult(member.getId(), member.getNickname(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
-    public LoginResult originalSignUp(SignUpRequest signUpRequest) {
+    public Member originalSignUp(SignUpRequest signUpRequest) {
         Member savedMember = memberService.registerMember(signUpRequest);
-        JwtRefreshToken jwtRefreshToken = tokenManagementService.saveRefreshToken(savedMember.getId());
-        SignUpSagaState data = new SignUpSagaState(savedMember.getId(), savedMember.getNickname(), jwtRefreshToken.getId());
+        SignUpSagaState data = new SignUpSagaState(savedMember.getId(), savedMember.getNickname());
         signUpSagaManager.create(data, Member.class, savedMember.getId());
-        return new LoginResult(savedMember.getId(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
+        return savedMember;
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public LoginResult TokenCreate(UUID userId) {
+        Member member = memberService.getOrThrow(userId);
+        JwtRefreshToken jwtRefreshToken = tokenManagementService.saveRefreshToken(userId);
+        return new LoginResult(userId, member.getNickname(), jwtRefreshToken.getId(), jwtRefreshToken.getExpiredAt());
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
