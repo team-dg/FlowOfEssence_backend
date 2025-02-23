@@ -22,7 +22,6 @@ import com.lolclone.authenticationmanagementinfra.exception.commonexception.Vali
 import com.lolclone.authenticationmanagementinfra.exception.domain.ExceptionType;
 import com.lolclone.authenticationmanagementinfra.exception.dto.ExceptionResponse;
 import com.lolclone.authenticationmanagementinfra.exception.dto.ValidErrorResponse;
-import com.lolclone.commonmodule.apigatewayserver.domain.AuthenticateContext;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +35,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String LOG_FORMAT_INFO = "\n[🔵INFO] - ({} {})\n(id: {}, role: {})\n{}\n {}: {}";
     private static final String LOG_FORMAT_WARN = "\n[🟠WARN] - ({} {})\n(id: {}, role: {})";
     private static final String LOG_FORMAT_ERROR = "\n[🔴ERROR] - ({} {})\n(id: {}, role: {})";
-    private final AuthenticateContext authenticateContext;
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ExceptionResponse> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
@@ -100,16 +98,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private void logInfo(AuthenticationException e, HttpServletRequest request) {
         log.info(LOG_FORMAT_INFO, request.getMethod(), request.getRequestURI(),
-                authenticateContext.getId(), authenticateContext.getRole(), e.getExceptionType(), e.getClass().getName(), e.getMessage());
+                e.getExceptionType(), e.getClass().getName(), e.getMessage());
     }
 
     private void logWarn(AuthenticationException e, HttpServletRequest request) {
         log.warn(LOG_FORMAT_WARN, request.getMethod(), request.getRequestURI(),
-                authenticateContext.getId(), authenticateContext.getRole(), e);
+                e.getExceptionType(), e.getClass().getName(), e.getMessage());
     }
 
     private void logError(Exception e, HttpServletRequest request) {
         log.error(LOG_FORMAT_ERROR, request.getMethod(), request.getRequestURI(),
-                authenticateContext.getId(), authenticateContext.getRole(), e);
+                e.getClass().getName(), e.getMessage());
     }
 }

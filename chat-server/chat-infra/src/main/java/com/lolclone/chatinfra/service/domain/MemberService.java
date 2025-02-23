@@ -1,19 +1,13 @@
 package com.lolclone.chatinfra.service.domain;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lolclone.chatdomain.domain.MemberDomainEvent;
 import com.lolclone.chatdomain.domain.member.Member;
 import com.lolclone.chatdomain.repository.MemberRepository;
-import com.lolclone.chatinfra.exception.commonexception.NotFoundException;
-import com.lolclone.chatinfra.exception.domain.ExceptionType;
-import com.lolclone.chatinfra.saga.producer.ChatDomainEventPublisher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class MemberService {
     private final MemberRepository memberRepository;
-    private final ChatDomainEventPublisher domainEventPublisher;
 
     /**
      * 여러 ID에 해당하는 사용자들을 한 번에 조회
@@ -92,8 +85,6 @@ public class MemberService {
                 .build();
 
         Member savedMember = findByIdAndCreateMember(userId, member);
-        List<MemberDomainEvent> events = savedMember.activate();
-        domainEventPublisher.publish(savedMember, events);
 
         return savedMember;
     }
@@ -103,8 +94,6 @@ public class MemberService {
         memberRepository.findById(userId)
             .ifPresent(member -> {
                 memberRepository.delete(member);
-                List<MemberDomainEvent> events = member.deactivate();
-                domainEventPublisher.publish(member, events);
             });
     }
 

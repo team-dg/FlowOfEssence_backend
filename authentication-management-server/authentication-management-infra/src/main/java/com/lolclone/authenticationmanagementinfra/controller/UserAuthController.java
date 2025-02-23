@@ -3,28 +3,23 @@ package com.lolclone.authenticationmanagementinfra.controller;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lolclone.authenticationmanagementinfra.service.application.OAuth2AuthenticationFacade;
-import com.lolclone.authenticationmanagementserviceapi.dto.CreateMemberResponse;
+import com.lolclone.authenticationmanagementdomain.domain.AuthenticatedUser;
+import com.lolclone.authenticationmanagementdomain.domain.CustomUserDetails;
+import com.lolclone.authenticationmanagementdomain.domain.Member;
+import com.lolclone.authenticationmanagementdomain.domain.oauth2.OAuth2UserPrincipal;
+import com.lolclone.authenticationmanagementinfra.service.application.UserAuthService;
 import com.lolclone.authenticationmanagementserviceapi.dto.LoginRequest;
-import com.lolclone.authenticationmanagementserviceapi.dto.LoginResponse;
-import com.lolclone.authenticationmanagementserviceapi.dto.LogoutRequest;
-import com.lolclone.authenticationmanagementserviceapi.dto.OAuth2LoginRequest;
-import com.lolclone.authenticationmanagementserviceapi.dto.OpenIdLoginRequest;
+import com.lolclone.authenticationmanagementserviceapi.dto.LoginResult;
 import com.lolclone.authenticationmanagementserviceapi.dto.RefreshTokenRequest;
 import com.lolclone.authenticationmanagementserviceapi.dto.SignUpRequest;
 import com.lolclone.authenticationmanagementserviceapi.dto.TokenRefreshResponse;
-import com.lolclone.commonmodule.apigatewayserver.annotation.UserAuth;
-import com.lolclone.commonmodule.apigatewayserver.domain.MemberAuthentication;
-import com.lolclone.commonmodule.authenticationmanagementserver.domain.SocialType;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,71 +30,55 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class UserAuthController {
-    private final OAuth2AuthenticationFacade oAuth2AuthenticationFacade;
-
-    @PostMapping("/login/oauth2")
-    public ResponseEntity<CreateMemberResponse> oauth2Login(
-        @Valid @RequestBody final OAuth2LoginRequest oauth2LoginRequest
-    ) {
-        final UUID userId = oAuth2AuthenticationFacade.oAuth2Login(oauth2LoginRequest.socialType(), oauth2LoginRequest.code());
-        return ResponseEntity.ok().body(new CreateMemberResponse(userId));
-    }
+    private final UserAuthService userAuthService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
+    public ResponseEntity<LoginResult> login(
         @Valid @RequestBody final LoginRequest loginRequest
     ) {
-        final LoginResponse loginResponse = oAuth2AuthenticationFacade.originalLogin(loginRequest);
-        return ResponseEntity.ok().body(loginResponse);
+        final LoginResult loginResult = userAuthService.originalLogin(loginRequest);
+        return ResponseEntity.ok().body(loginResult);
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<CreateMemberResponse> signUp(
+    public ResponseEntity<UUID> signUp(
         @Valid @RequestBody final SignUpRequest signUpRequest
     ) {
-        final UUID userId = oAuth2AuthenticationFacade.originalSignUp(signUpRequest);
-        return ResponseEntity.ok().body(new CreateMemberResponse(userId)); 
+        final Member member = userAuthService.originalSignUp(signUpRequest);
+        return ResponseEntity.ok().body(member.getId()); 
     }
 
-    @GetMapping("/login/oauth2/{socialType}")
-    public ResponseEntity<CreateMemberResponse> oauth2LoginRedirect(
-        @PathVariable final SocialType socialType,
-        @RequestParam final String code
-    ) {
-        final UUID userId = oAuth2AuthenticationFacade.oAuth2Login(socialType, code);
-        return ResponseEntity.ok().body(new CreateMemberResponse(userId));
-    }
-
-    @PostMapping("/login/open-id")
-    public ResponseEntity<CreateMemberResponse> openIdLogin(
-        @Valid @RequestBody final OpenIdLoginRequest openIdLoginRequest
-    ) {
-        final UUID userId = oAuth2AuthenticationFacade.openIdLogin(openIdLoginRequest.socialType(), openIdLoginRequest.idToken());
-        return ResponseEntity.ok().body(new CreateMemberResponse(userId));
-    }
-
-    @UserAuth
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-        final MemberAuthentication memberAuthentication,
-        @RequestBody @Valid final LogoutRequest logoutRequest
+        @AuthenticationPrincipal final OAuth2UserPrincipal oauth2UserPrincipal,
+        @AuthenticationPrincipal final CustomUserDetails userDetails
     ) {
-        oAuth2AuthenticationFacade.logOut(memberAuthentication.getId(), UUID.fromString(logoutRequest.refreshToken()));
-        return ResponseEntity.ok().build();
+        userAuthService.logout(oauth2UserPrincipal, userDetails);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<TokenRefreshResponse> refresh(
-        @RequestBody @Valid final RefreshTokenRequest refreshTokenRequest
+    public ResponseEntity<TokenRefreshResponse> refreshToken(
+        @RequestBody @Valid final RefreshTokenRequest refreshTokenRequest,
+        @AuthenticationPrincipal final AuthenticatedUser authenticatedUser
     ) {
-        final TokenRefreshResponse tokenRefreshResponse = oAuth2AuthenticationFacade.refresh(UUID.fromString(refreshTokenRequest.refreshToken()));
+        final TokenRefreshResponse tokenRefreshResponse = userAuthService.refreshToken(refreshTokenRequest.refreshToken(), authenticatedUser.getProvider());
         return ResponseEntity.ok().body(tokenRefreshResponse);
     }
     
-    @UserAuth
     @DeleteMapping
-    public ResponseEntity<Void> deleteAccount(final MemberAuthentication memberAuthentication) {
-        oAuth2AuthenticationFacade.deleteAccount(memberAuthentication.getId());
+    public ResponseEntity<Void> deleteAccount(
+        @AuthenticationPrincipal final CustomUserDetails userDetails
+    ) {
+        userAuthService.deleteAccount(userDetails.getMemberId());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/unlink/{provider}")
+    public ResponseEntity<Void> unlink(
+        @AuthenticationPrincipal final OAuth2UserPrincipal oauth2UserPrincipal
+    ) {
+        userAuthService.unlink(oauth2UserPrincipal.getOauth2UserInfo().getProvider(), oauth2UserPrincipal);
         return ResponseEntity.ok().build();
     }
 }
