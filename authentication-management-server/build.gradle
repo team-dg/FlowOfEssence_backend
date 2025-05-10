@@ -1,0 +1,9 @@
+// 이 프로젝트는 하위 모듈을 위한 컨테이너 역할만 하므로 실행 가능한 Jar를 만들지 않습니다.
+bootJar {
+    enabled = false
+}
+
+// 라이브러리 Jar는 생성하도록 허용 (필요하다면)
+jar {
+    enabled = true
+} 

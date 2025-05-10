@@ -7,8 +7,6 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,22 +14,14 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lolclone.authenticationmanagementinfra.service.CustomAccessDeniedHandler;
 import com.lolclone.authenticationmanagementinfra.service.CustomAuthenticationEntryPoint;
 import com.lolclone.authenticationmanagementinfra.service.CustomAuthenticationFailureHandler;
 import com.lolclone.authenticationmanagementinfra.service.CustomAuthenticationSuccessHandler;
-import com.lolclone.authenticationmanagementinfra.service.CustomLoginAuthenticationProvider;
 import com.lolclone.authenticationmanagementinfra.service.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.lolclone.authenticationmanagementinfra.service.JwtAuthenticationFilter;
-import com.lolclone.authenticationmanagementinfra.service.JwtLoginAuthenticationProvider;
-import com.lolclone.authenticationmanagementinfra.service.JwtOAuth2AuthenticationProvider;
 import com.lolclone.authenticationmanagementinfra.service.application.CustomJdbcOAuth2AuthorizedClientService;
 import com.lolclone.authenticationmanagementinfra.service.application.CustomOAuth2UserService;
 import com.lolclone.authenticationmanagementinfra.service.application.CustomOidcUserService;
-import com.lolclone.authenticationmanagementinfra.service.domain.JwtTokenService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,17 +41,9 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOidcUserService customOidcUserService;
 
-    private final ObjectMapper objectMapper;
-    private final JwtTokenService jwtTokenService;
-
-    private final CustomLoginAuthenticationProvider customLoginAuthenticationProvider;
-    private final JwtOAuth2AuthenticationProvider jwtOAuth2AuthenticationProvider;
-    private final JwtLoginAuthenticationProvider jwtLoginAuthenticationProvider;
-
     @Bean
     public SecurityFilterChain securityFilterChain(
-        HttpSecurity http,
-        AuthenticationManager authenticationManager
+        HttpSecurity http
     ) throws Exception {
         return http
             .httpBasic(AbstractHttpConfigurer::disable) // 기본 인증 비활성화 -> JWT 기반 인증, 보안성이 낮은 Basic 인증 제외
@@ -78,7 +60,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(customAccessDeniedHandler)
             )
 
-            .addFilterBefore(new JwtAuthenticationFilter(objectMapper, authenticationManager, jwtTokenService), UsernamePasswordAuthenticationFilter.class)
+            //.addFilterBefore(new JwtAuthenticationFilter(objectMapper, authenticationManager, jwtTokenService), UsernamePasswordAuthenticationFilter.class)
 
             .oauth2Login((oauth2) -> oauth2
                 .authorizationEndpoint(config -> config.authorizationRequestRepository(
@@ -113,15 +95,5 @@ public class SecurityConfig {
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
         roleHierarchy.setHierarchy("ROLE_USER > ROLE_ANONYMOUS");
         return roleHierarchy;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http
-            .getSharedObject(AuthenticationManagerBuilder.class)
-            .authenticationProvider(customLoginAuthenticationProvider)
-            .authenticationProvider(jwtOAuth2AuthenticationProvider)
-            .authenticationProvider(jwtLoginAuthenticationProvider)
-            .build();
     }
 }

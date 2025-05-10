@@ -4,7 +4,6 @@ server:
 spring:
     main:
         web-application-type: servlet
-        allow-bean-definition-overriding: true
     profiles:
         default: local
     
@@ -24,3 +23,10 @@ spring:
 #JWT Secret Key 설정
 secret:
     key: ${jwt.secret.key}
+
+logging:
+  level:
+    org:
+      hibernate:
+        type: info
+        level: info

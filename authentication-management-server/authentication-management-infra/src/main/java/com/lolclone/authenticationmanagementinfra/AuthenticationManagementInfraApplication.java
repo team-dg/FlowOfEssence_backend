@@ -13,7 +13,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 })
 @EnableJpaRepositories(basePackages = "com.lolclone.authenticationmanagementdomain.repository")
 @EntityScan(basePackages = "com.lolclone.authenticationmanagementdomain.domain")
-@ConfigurationPropertiesScan(basePackages = "com.lolclone.authenticationmanagementdomain.domain.oauth2")
+@ConfigurationPropertiesScan(basePackages = {
+    "com.lolclone.authenticationmanagementdomain.domain.oauth2"
+})
 public class AuthenticationManagementInfraApplication {
     public static void main(String[] args) {
         SpringApplication.run(AuthenticationManagementInfraApplication.class, args);

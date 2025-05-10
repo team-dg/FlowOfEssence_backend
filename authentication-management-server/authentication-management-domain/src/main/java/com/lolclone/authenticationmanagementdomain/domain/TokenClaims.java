@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,8 +24,9 @@ public class TokenClaims {
 
     // List<String>을 Collection<? extends GrantedAuthority>로 변환하는 메서드 추가
     public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
+        // ArrayList는 LinkedList보다 임의 접근이 빠르므로 ArrayList로 수집
         return authorities.stream()
             .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 }

@@ -47,7 +47,7 @@ public class CustomOidcUserService extends OidcUserService {
             throw new OAuth2AuthenticationException(
                 new OAuth2Error(
                     "authentication_error",
-                    "사용자 인증에 실패했습니다: " + e.getMessage(),
+                    String.format("사용자 인증에 실패했습니다: %s", e.getMessage()),
                     null
                 )
             );

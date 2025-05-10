@@ -1,5 +1,6 @@
 package com.lolclone.authenticationmanagementinfra.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,9 +10,6 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.KeyExpirationEventMessageListener;
-import org.springframework.data.redis.listener.PatternTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -29,7 +27,7 @@ public class RedisConfig {
     private final RedisProperties redisProperties;
     private final ObjectMapper objectMapper;
 
-    @Bean
+    @Bean(name = "redisConnectionFactory")
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(redisProperties.getHost());
@@ -53,7 +51,9 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(
+        @Qualifier("redisConnectionFactory") RedisConnectionFactory connectionFactory
+    ) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(connectionFactory);
 
@@ -65,22 +65,5 @@ public class RedisConfig {
         redisTemplate.setEnableTransactionSupport(true);
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
-    }
-
-    @Bean
-    public RedisMessageListenerContainer redisMessageListenerContainer(
-        RedisConnectionFactory connectionFactory,
-        KeyExpirationEventMessageListener keyExpirationEventMessageListener
-    ) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        
-        // 키 만료 이벤트 리스너 등록
-        container.addMessageListener(
-            keyExpirationEventMessageListener, 
-            new PatternTopic("__keyevent@*__:expired")
-        );
-        
-        return container;
     }
 }

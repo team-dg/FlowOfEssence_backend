@@ -1,7 +1,5 @@
 package com.lolclone.authenticationmanagementinfra.controller;
 
-import java.util.UUID;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,11 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lolclone.authenticationmanagementdomain.domain.AuthenticatedUser;
 import com.lolclone.authenticationmanagementdomain.domain.CustomUserDetails;
-import com.lolclone.authenticationmanagementdomain.domain.Member;
 import com.lolclone.authenticationmanagementdomain.domain.oauth2.OAuth2UserPrincipal;
+import com.lolclone.authenticationmanagementinfra.service.application.MemberRegisterFacade;
 import com.lolclone.authenticationmanagementinfra.service.application.UserAuthService;
 import com.lolclone.authenticationmanagementserviceapi.dto.LoginRequest;
-import com.lolclone.authenticationmanagementserviceapi.dto.LoginResult;
 import com.lolclone.authenticationmanagementserviceapi.dto.RefreshTokenRequest;
 import com.lolclone.authenticationmanagementserviceapi.dto.SignUpRequest;
 import com.lolclone.authenticationmanagementserviceapi.dto.TokenRefreshResponse;
@@ -31,21 +28,22 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/auth")
 public class UserAuthController {
     private final UserAuthService userAuthService;
+    private final MemberRegisterFacade memberRegisterFacade;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResult> login(
+    public ResponseEntity<TokenRefreshResponse> login(
         @Valid @RequestBody final LoginRequest loginRequest
     ) {
-        final LoginResult loginResult = userAuthService.originalLogin(loginRequest);
-        return ResponseEntity.ok().body(loginResult);
+        final TokenRefreshResponse tokenRefreshResponse = userAuthService.originalLogin(loginRequest);
+        return ResponseEntity.ok().body(tokenRefreshResponse);
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UUID> signUp(
+    public ResponseEntity<TokenRefreshResponse> signUp(
         @Valid @RequestBody final SignUpRequest signUpRequest
     ) {
-        final Member member = userAuthService.originalSignUp(signUpRequest);
-        return ResponseEntity.ok().body(member.getId()); 
+        final TokenRefreshResponse tokenRefreshResponse = memberRegisterFacade.registerMemberAcrossServices(signUpRequest);
+        return ResponseEntity.ok().body(tokenRefreshResponse);
     }
 
     @PostMapping("/logout")

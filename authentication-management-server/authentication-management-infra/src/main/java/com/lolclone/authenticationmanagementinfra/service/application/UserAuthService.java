@@ -4,7 +4,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,16 +17,19 @@ import com.lolclone.authenticationmanagementdomain.domain.Member;
 import com.lolclone.authenticationmanagementdomain.domain.TokenClaims;
 import com.lolclone.authenticationmanagementdomain.domain.oauth2.OAuth2Provider;
 import com.lolclone.authenticationmanagementdomain.domain.oauth2.OAuth2UserPrincipal;
+import com.lolclone.authenticationmanagementinfra.exception.commonexception.NotFoundException;
 import com.lolclone.authenticationmanagementinfra.exception.commonexception.UnauthorizedException;
 import com.lolclone.authenticationmanagementinfra.exception.domain.ExceptionType;
 import com.lolclone.authenticationmanagementinfra.service.TokenProviderTemplate;
 import com.lolclone.authenticationmanagementinfra.service.domain.JwtTokenService;
 import com.lolclone.authenticationmanagementinfra.service.domain.MemberService;
 import com.lolclone.authenticationmanagementinfra.service.domain.TokenManagementService;
+import com.lolclone.authenticationmanagementinfra.utils.RedisUtils;
 import com.lolclone.authenticationmanagementserviceapi.dto.LoginRequest;
-import com.lolclone.authenticationmanagementserviceapi.dto.LoginResult;
 import com.lolclone.authenticationmanagementserviceapi.dto.SignUpRequest;
 import com.lolclone.authenticationmanagementserviceapi.dto.TokenRefreshResponse;
+import com.lolclone.commonmodule.domain.SessionStatus;
+import com.lolclone.commonmodule.domain.UserSession;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,32 +40,62 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class UserAuthService {
     private final MemberService memberService;
-    private final AuthenticationManager authenticationManager;
     private final OAuth2AuthorizedClientService oauth2AuthorizedClientService;
     private final OAuth2UserUnlinkService oauth2UserUnlinkService;
     private final TokenManagementService tokenManagementService;
     private final JwtTokenService jwtTokenService;
     private final TokenProviderTemplate tokenProviderTemplate;
+    private final RedisUtils redisUtils;
 
     @Value("${refresh.reissue.threshold.minutes}")
     private long reissueThresholdMinutes;
 
     @Transactional
-    public LoginResult originalLogin(LoginRequest loginRequest) {
-        
-        // 1. Spring Security 인증 처리
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
-        );
+    public TokenRefreshResponse originalLogin(LoginRequest loginRequest) {
+        // 1. 사용자 정보 조회
+        Member member = memberService.findMemberByUsername(loginRequest.username())
+                .orElseThrow(() -> new NotFoundException(ExceptionType.USER_NOT_FOUND));
 
-        // 2. SecurityContext에 인증 정보 저장
+        // 2. 비밀번호 검증
+        memberService.verifyPassword(member, loginRequest.password());
+        
+        // 3. 인증 성공 처리
+        CustomUserDetails userDetails = CustomUserDetails.of(OAuth2Provider.DEFAULT, member);
+
+        // 4. 인증 객체 생성
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        // 5. SecurityContextHolder에 인증 객체 저장
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 3. 인증된 사용자 정보 추출
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        // 6. 반환
+        TokenRefreshResponse tokenResponse = createSession(member.getId(), member);
 
-        // 4. 반환 -> 여기서 토큰 생성 아직 x
-        return new LoginResult(userDetails.getMemberId(), userDetails.getEmail());
+        return tokenResponse;
+    }
+
+    @Transactional
+    public TokenRefreshResponse createSession(UUID memberId, Member member) {
+        UserSession existingSession = redisUtils.getUserSession(memberId.toString());
+        if(existingSession != null) {
+            redisUtils.invalidateUserSession(memberId.toString());
+        }
+
+        TokenRefreshResponse refreshTokenResponse = jwtTokenService.createTokenResponse(member, OAuth2Provider.DEFAULT);
+        
+        saveUserSession(memberId, refreshTokenResponse);
+
+        return refreshTokenResponse;
+    }
+
+    private void saveUserSession(UUID memberId, TokenRefreshResponse refreshTokenResponse) {
+        String accessToken = refreshTokenResponse.accessToken().token();
+        String refreshToken = refreshTokenResponse.refreshToken().token();
+
+        UserSession userSession = UserSession.createNew(memberId, accessToken, refreshToken);
+
+        Long refreshTokenTtl = tokenProviderTemplate.getRemainTime(refreshToken);
+        redisUtils.saveUserSession(userSession, refreshTokenTtl);
     }
 
     @Transactional
@@ -73,26 +105,39 @@ public class UserAuthService {
     }
 
     @Transactional
-    public TokenRefreshResponse tokenCreate(Member member) {
-        TokenRefreshResponse refreshTokenResponse = jwtTokenService.createTokenResponse(member, OAuth2Provider.DEFAULT);
-        String refreshToken = refreshTokenResponse.refreshToken().token();
-        tokenManagementService.saveRefreshToken(member.getId(), refreshToken);
-        return refreshTokenResponse;
+    public void cancelSignUp(UUID memberId) {
+        memberService.deleteById(memberId);
     }
 
     @Transactional
     public void logout(final OAuth2UserPrincipal oauth2UserPrincipal, final CustomUserDetails userDetails) {
-        tokenManagementService.findTokenById(userDetails.getMemberId()).ifPresent(refreshToken -> {
-            if(tokenManagementService.isOwner(userDetails.getMemberId())) {
-                tokenManagementService.deleteTokenById(userDetails.getMemberId());
-                if(oauth2UserPrincipal instanceof OAuth2UserPrincipal) {
-                    oauth2AuthorizedClientService.removeAuthorizedClient(
-                        oauth2UserPrincipal.getRegistrationId(),
-                        oauth2UserPrincipal.getName()
-                    );
-                }
-            }
-        });
+        UUID memberId = userDetails.getMemberId();
+
+        // 1. 사용자 세션 상태를 REVOKED로 변경
+        UserSession userSession = redisUtils.getUserSession(memberId.toString());
+
+        if (userSession != null && userSession.getStatus() == SessionStatus.ACTIVE) {
+            // 2. 세션 상태를 REVOKED로 변경
+            redisUtils.updateSessionStatus(memberId, SessionStatus.REVOKED);
+            
+            // 3. 액세스 토큰을 블랙리스트에 추가
+            String accessToken = userSession.getAccessToken();
+            long accessTokenRemainTime = tokenProviderTemplate.getRemainTime(accessToken);
+            redisUtils.setBlacklistToken(accessToken, memberId, accessTokenRemainTime);
+            
+            // 4. 리프레시 토큰을 블랙리스트에 추가
+            String refreshToken = userSession.getRefreshToken();
+            long refreshTokenRemainTime = tokenProviderTemplate.getRemainTime(refreshToken);
+            redisUtils.setBlacklistToken(refreshToken, memberId, refreshTokenRemainTime);
+        }
+        
+        // 5. OAuth2 클라이언트 제거
+        if(oauth2UserPrincipal instanceof OAuth2UserPrincipal) {
+            oauth2AuthorizedClientService.removeAuthorizedClient(
+                oauth2UserPrincipal.getRegistrationId(),
+                oauth2UserPrincipal.getName()
+            );
+        }
     }
 
     @Transactional
@@ -106,24 +151,56 @@ public class UserAuthService {
         // 3. 사용자 정보 조회
         Member member = memberService.getOrThrow(memberId);
 
-        // 4. DB에 저장된 RefreshToken과 비교
-        String savedRefreshToken = tokenManagementService.getOrElseThrow(memberId).getRefreshToken();
+        // 4. Redis에서 사용자 세션 조회
+        UserSession userSession = redisUtils.getUserSession(memberId.toString());
+        
+        // 5. 세션이 없거나 ACTIVE 상태가 아니면 예외 발생
+        if (userSession == null)
+            throw new UnauthorizedException(ExceptionType.USER_SESSION_NOT_FOUND);
 
-        // 5. RefreshToken이 일치하지 않으면 예외 발생
-        if (!refreshToken.equals(savedRefreshToken))
+        if (userSession.getStatus() != SessionStatus.ACTIVE)
+            throw new UnauthorizedException(ExceptionType.USER_SESSION_EXPIRED);
+
+        // 6. 세션의 리프레시 토큰과 요청된 리프레시 토큰 비교
+        if (!refreshToken.equals(userSession.getRefreshToken()))
             throw new UnauthorizedException(ExceptionType.INVALID_CREDENTIALS);
 
-        // 6. RefreshToken 만료 시간 확인
+        // 7. RefreshToken 만료 시간 확인
         long remainingTime = tokenProviderTemplate.getRemainTime(refreshToken);
         
-        // 7. RefreshToken 재발급 여부 결정 (예: 1일 이내로 남은 경우)
-        return reissueRefreshToken(remainingTime) 
+        // 8. RefreshToken 재발급 여부 결정 (예: 1일 이내로 남은 경우)
+        TokenRefreshResponse tokenResponse = reissueRefreshToken(remainingTime)
             ? jwtTokenService.createTokenResponse(member, provider)
             : jwtTokenService.createAccessTokenResponse(member, provider, refreshToken);
+        
+        // 9. 세션 정보 업데이트
+        updateUserSession(userSession, tokenResponse, remainingTime);
+        
+        return tokenResponse;
     }
 
     private boolean reissueRefreshToken(Long remainingTime) {
         return remainingTime < TimeUnit.MINUTES.toMillis(reissueThresholdMinutes);
+    }
+
+    private void updateUserSession(UserSession userSession, TokenRefreshResponse tokenResponse, long remainingTime) {
+        String newAccessToken = tokenResponse.accessToken().token();
+        String newRefreshToken = tokenResponse.refreshToken().token();
+        
+        // 액세스 토큰 업데이트
+        userSession.updateAccessToken(newAccessToken);
+
+        // 리프레시 토큰이 재발급된 경우 업데이트
+        if (tokenResponse.refreshToken() != null && !userSession.getRefreshToken().equals(newRefreshToken)) {
+            userSession.updateRefreshToken(newRefreshToken);
+        }
+
+        // 마지막 접근 시간 업데이트
+        userSession.updateLastAccessTime();
+
+        long ttl = newRefreshToken != null ? tokenProviderTemplate.getRemainTime(newRefreshToken) : remainingTime;
+
+        redisUtils.saveUserSession(userSession, ttl);
     }
 
     @Transactional

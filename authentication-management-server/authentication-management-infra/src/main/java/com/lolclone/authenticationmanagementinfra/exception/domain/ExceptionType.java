@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import org.springframework.http.HttpStatus;
@@ -28,11 +29,13 @@ public enum ExceptionType {
     TOKEN_EXPIRED_EXCEPTION(UNAUTHORIZED, "E008", "토큰이 만료되었습니다."),
     TOKEN_GENERATION_FAILED(UNAUTHORIZED, "E011", "토큰 생성에 실패했습니다."),
     FAIL_LOGIN(UNAUTHORIZED, "E012", "로그인에 실패했습니다."),
+    USER_SESSION_EXPIRED(UNAUTHORIZED, "E013", "사용자 세션이 만료되었습니다."),
 
     //404
     USER_NOT_FOUND(NOT_FOUND, "E008", "존재하지 않는 유저입니다."),
     JWT_CLAIM_NOT_FOUND(NOT_FOUND, "E009", "JWT 클레임이 존재하지 않습니다."),
     JWT_REFRESH_TOKEN_NOT_FOUND(NOT_FOUND, "E010", "리프레쉬 토큰이 존재하지 않습니다."),
+    USER_SESSION_NOT_FOUND(NOT_FOUND, "E011", "사용자 세션이 존재하지 않습니다."),
     
     //403
     OAUTH2_UNLINK_FAILED(FORBIDDEN, "E009", "OAuth2 계정 연결 해제에 실패했습니다."),
@@ -42,7 +45,13 @@ public enum ExceptionType {
 
     //500
     EXCEPTION(INTERNAL_SERVER_ERROR, "E000", "예상치 못한 오류가 발생했습니다."),
-    AUTHENTICATION_ENTRY_POINT_EXCEPTION(INTERNAL_SERVER_ERROR, "E013", "인증 진입점 예외가 발생했습니다.")
+    AUTHENTICATION_ENTRY_POINT_EXCEPTION(INTERNAL_SERVER_ERROR, "E013", "인증 진입점 예외가 발생했습니다."),
+
+    //503
+    CHAT_SERVICE_EXCEPTION(SERVICE_UNAVAILABLE, "E014", "채팅 서버 예외가 발생했습니다."),
+    MATCHING_SERVICE_EXCEPTION(SERVICE_UNAVAILABLE, "E015", "매칭 서버 예외가 발생했습니다."),
+    MICROSERVICE_SERVICE_EXCEPTION(SERVICE_UNAVAILABLE, "E016", "마이크로 서비스 예외가 발생했습니다."),
+    SERVICE_COMMUNICATION_ERROR(SERVICE_UNAVAILABLE, "E017", "서비스 통신 오류가 발생했습니다.")
     ;
 
     private final HttpStatus status;
