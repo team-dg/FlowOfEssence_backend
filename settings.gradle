@@ -1,28 +1,10 @@
 rootProject.name = 'flowofessence'
 
+include('api-gateway-server')
+
 include('authentication-management-server:authentication-management-domain')
 include('authentication-management-server:authentication-management-infra')
 include('authentication-management-server:authentication-management-service-api')
 include('authentication-management-server:authentication-management-service-contracts')
 
-include('user-server:user-domain')
-include('user-server:user-infra')
-include('user-server:user-service-api')
-include('user-server:user-service-contracts')
-
-include('chat-server:chat-domain')
-include('chat-server:chat-infra')
-include('chat-server:chat-service-api')
-include('chat-server:chat-service-contracts')
-
-include('matchmaking-server:matchmaking-domain')
-include('matchmaking-server:matchmaking-infra')
-include('matchmaking-server:matchmaking-service-api')
-include('matchmaking-server:matchmaking-service-contracts')
-
-include('logging-monitoring-server')
 include('common-module')
-
-include('api-gateway-server:api-gateway-domain')
-include('api-gateway-server:api-gateway-infra')
-include('api-gateway-server:api-gateway-service-api')

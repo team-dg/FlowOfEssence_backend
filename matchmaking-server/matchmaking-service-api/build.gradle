@@ -1,7 +1,0 @@
-dependencies {
-	api project(':matchmaking-server:matchmaking-domain')
-}
-
-test {
-    enabled = false
-}

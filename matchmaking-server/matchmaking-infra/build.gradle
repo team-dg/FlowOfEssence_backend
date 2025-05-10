@@ -1,7 +1,0 @@
-dependencies {
-	implementation project(':matchmaking-server:matchmaking-service-api')
-}
-
-test {
-    enabled = false
-}
