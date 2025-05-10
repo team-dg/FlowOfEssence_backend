@@ -1,11 +1,9 @@
 package com.lolclone.chatdomain.domain.member;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import com.lolclone.chatdomain.domain.MemberDomainEvent;
 import com.lolclone.chatdomain.domain.MemberStatus;
 import com.lolclone.chatdomain.domain.common.BaseEntity;
 
@@ -67,15 +65,6 @@ public class Member extends BaseEntity {
         this.nickname = nickname;
         this.tags = new HashSet<>();
         this.stateInfo = MemberStateInfo.init();
-    }
-
-    // 비즈니스 메서드
-    public List<MemberDomainEvent> activate() {
-        return this.stateInfo.activate(this.id);
-    }
-
-    public List<MemberDomainEvent> deactivate() {
-        return this.stateInfo.deactivate(this.id);
     }
 
     public void startGame(GameType gameType, GameMode gameMode) {

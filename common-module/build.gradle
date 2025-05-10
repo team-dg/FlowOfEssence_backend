@@ -5,7 +5,11 @@ dependencies {
     //JWT
     api 'io.jsonwebtoken:jjwt-api:0.12.5'
     //Security
-    api "org.springframework.security:spring-security-crypto"
+    api "org.springframework.boot:spring-boot-starter-security"
+    //Spring OAuth2 Client
+    api "org.springframework.boot:spring-boot-starter-oauth2-client"
+    // Spring Redis
+	api 'org.springframework.boot:spring-boot-starter-data-redis'
 	//JPA
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
 	//PostgreSQL
@@ -16,18 +20,18 @@ dependencies {
     api 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     // Actuator
     api 'org.springframework.boot:spring-boot-starter-actuator'
-    // Simple DSL
-    api "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-orchestration-simple-dsl-starter:${eventuateTramSagasVersion}"
-    // Saga Participant
-    api "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-participant-starter:${eventuateTramSagasVersion}"
-    // Eventuate Tram Consumer
-    api "io.eventuate.tram.core:eventuate-tram-spring-consumer-kafka:${eventuateTramVersion}"
-    // Eventuate Tram Producer
-    api "io.eventuate.tram.core:eventuate-tram-spring-producer-jdbc:${eventuateTramVersion}"
-    // Eventuate Tram Aggregate Domain Events
-    api "io.eventuate.tram.core:eventuate-tram-aggregate-domain-events:${eventuateTramVersion}"
-    // Eventuate Tram Consumer JDBC
-    api "io.eventuate.tram.core:eventuate-tram-spring-consumer-jdbc:${eventuateTramVersion}"
+    // // Simple DSL
+    // api "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-orchestration-simple-dsl-starter:${eventuateTramSagasVersion}"
+    // // Saga Participant
+    // api "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-participant-starter:${eventuateTramSagasVersion}"
+    // // Eventuate Tram Consumer
+    // api "io.eventuate.tram.core:eventuate-tram-spring-consumer-kafka:${eventuateTramVersion}"
+    // // Eventuate Tram Producer
+    // api "io.eventuate.tram.core:eventuate-tram-spring-producer-jdbc:${eventuateTramVersion}"
+    // // Eventuate Tram Aggregate Domain Events
+    // api "io.eventuate.tram.core:eventuate-tram-aggregate-domain-events:${eventuateTramVersion}"
+    // // Eventuate Tram Consumer JDBC
+    // api "io.eventuate.tram.core:eventuate-tram-spring-consumer-jdbc:${eventuateTramVersion}"
     //Validation
     api 'org.springframework.boot:spring-boot-starter-validation'
     // Jackson
@@ -36,8 +40,6 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
     // Jackson Annotations
     api 'com.fasterxml.jackson.core:jackson-annotations:2.15.3'
-    // Brave
-    api 'io.micrometer:micrometer-tracing-bridge-brave'
     // JUnit
     api 'org.springframework.boot:spring-boot-starter-test'
 }

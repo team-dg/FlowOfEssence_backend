@@ -1,15 +1,26 @@
+configurations {
+	all {
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
+}
+
 dependencies {
     //Authentication-management-API
     implementation project(':authentication-management-server:authentication-management-service-api')
-    //User-Service-API
-    implementation project(":user-server:user-service-api")
-    //Chat-Service-API
-    implementation project(":chat-server:chat-service-api")
-    // Jwt
+    //JWT
+    api 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
-    // WebSocket
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // Spring Redis
+	api 'org.springframework.boot:spring-boot-starter-data-redis'
+	//PostgreSQL
+    api 'org.postgresql:postgresql'
+    //Web
+    api 'org.springframework.boot:spring-boot-starter-web'
+    // log4j2
+	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    //Spring H2
+	implementation 'com.h2database:h2'
 }
 
 test {

@@ -39,3 +39,7 @@ out/
 ### Security ###
 **/security/
 **/docs/
+.qodo
+
+.cursorrules
+.codiumai.toml

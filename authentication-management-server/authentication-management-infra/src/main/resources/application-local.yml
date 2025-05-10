@@ -1,9 +1,13 @@
 spring:
   datasource:
-      driver-class-name: org.postgresql.Driver
-      url: jdbc:postgresql://${local-db.postgres.host}:${local-db.postgres.port}/${local-db.postgres.name}
-      username: ${local-db.postgres.username}
-      password: ${local-db.postgres.password}
+      # driver-class-name: org.postgresql.Driver
+      # url: jdbc:postgresql://${local-db.postgres.host}:${local-db.postgres.port}/${local-db.postgres.name}
+      # username: ${local-db.postgres.username}
+      # password: ${local-db.postgres.password}
+      url: jdbc:h2:mem:authentication-management-server
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
 
   jpa:
     properties:
@@ -12,7 +16,8 @@ spring:
         highlight_sql: true
         hbm2ddl.auto: create
         default_batch_fetch_size: 100
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # dialect: org.hibernate.dialect.PostgreSQLDialect
+        database-platform: org.hibernate.dialect.H2Dialect
     open-in-view: false
     show-sql: true
   
@@ -20,6 +25,11 @@ spring:
     redis:
       host: ${local-redis.host}
       port: ${local-redis.port}
+      timeout: ${local-redis.timeout}
+
+microservice:
+  chatServiceUrl: http://localhost:6002
+  matchingServiceUrl: http://localhost:6003
 
 eventuatelocal:
   kafka:

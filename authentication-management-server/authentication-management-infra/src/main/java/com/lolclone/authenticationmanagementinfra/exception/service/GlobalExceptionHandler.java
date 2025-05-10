@@ -22,7 +22,6 @@ import com.lolclone.authenticationmanagementinfra.exception.commonexception.Vali
 import com.lolclone.authenticationmanagementinfra.exception.domain.ExceptionType;
 import com.lolclone.authenticationmanagementinfra.exception.dto.ExceptionResponse;
 import com.lolclone.authenticationmanagementinfra.exception.dto.ValidErrorResponse;
-import com.lolclone.commonmodule.apigatewayserver.domain.AuthenticateContext;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -33,10 +32,11 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger("ErrorLogger");
-    private static final String LOG_FORMAT_INFO = "\n[🔵INFO] - ({} {})\n(id: {}, role: {})\n{}\n {}: {}";
-    private static final String LOG_FORMAT_WARN = "\n[🟠WARN] - ({} {})\n(id: {}, role: {})";
-    private static final String LOG_FORMAT_ERROR = "\n[🔴ERROR] - ({} {})\n(id: {}, role: {})";
-    private final AuthenticateContext authenticateContext;
+    
+    // 정적 상수로 StringBuilder를 미리 생성하는 대신 메서드에서 필요할 때 생성
+    private static final String LOG_FORMAT_INFO_PATTERN = "[🔵INFO] - (%s %s)\nExceptionType: %s\n %s: %s";
+    private static final String LOG_FORMAT_WARN_PATTERN = "[🟠WARN] - (%s %s)\nExceptionType: %s\n %s: %s";
+    private static final String LOG_FORMAT_ERROR_PATTERN = "[🔴ERROR] - (%s %s)\nExceptionType: %s\n %s: %s";
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ExceptionResponse> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
@@ -95,21 +95,33 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             HttpStatusCode status,
             WebRequest request
     ) {
+        log.info("[🔵INFO] - Validation Error\n{}", ValidErrorResponse.from(e));
         return ResponseEntity.status(BAD_REQUEST).body(ValidErrorResponse.from(e));
     }
 
     private void logInfo(AuthenticationException e, HttpServletRequest request) {
-        log.info(LOG_FORMAT_INFO, request.getMethod(), request.getRequestURI(),
-                authenticateContext.getId(), authenticateContext.getRole(), e.getExceptionType(), e.getClass().getName(), e.getMessage());
+        log.info(String.format(LOG_FORMAT_INFO_PATTERN, 
+                request.getMethod(), 
+                request.getRequestURI(),
+                e.getExceptionType(), 
+                e.getClass().getName(), 
+                e.getMessage()));
     }
 
     private void logWarn(AuthenticationException e, HttpServletRequest request) {
-        log.warn(LOG_FORMAT_WARN, request.getMethod(), request.getRequestURI(),
-                authenticateContext.getId(), authenticateContext.getRole(), e);
+        log.warn(String.format(LOG_FORMAT_WARN_PATTERN, 
+                request.getMethod(), 
+                request.getRequestURI(),
+                e.getExceptionType(), 
+                e.getClass().getName(), 
+                e.getMessage()));
     }
 
     private void logError(Exception e, HttpServletRequest request) {
-        log.error(LOG_FORMAT_ERROR, request.getMethod(), request.getRequestURI(),
-                authenticateContext.getId(), authenticateContext.getRole(), e);
+        log.error(String.format(LOG_FORMAT_ERROR_PATTERN, 
+                request.getMethod(), 
+                request.getRequestURI(),
+                e.getClass().getName(), 
+                e.getMessage()));
     }
 }

@@ -1,16 +1,7 @@
 package com.lolclone.chatdomain.domain.member;
 
-import static java.util.Collections.singletonList;
-
-import java.util.List;
-import java.util.UUID;
-
-import com.lolclone.chatdomain.domain.MemberCreatedEvent;
-import com.lolclone.chatdomain.domain.MemberDomainEvent;
 import com.lolclone.chatdomain.domain.MemberState;
 import com.lolclone.chatdomain.domain.MemberStatus;
-import com.lolclone.chatdomain.domain.UndoCreateMemberEvent;
-import com.lolclone.chatdomain.exception.UnsupportedStateTransitionException;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -37,36 +28,6 @@ public class MemberStateInfo {
         info.state = MemberState.PENDING;
         info.status = MemberStatus.OFFLINE;
         return info;
-    }
-
-    public List<MemberDomainEvent> activate(UUID memberId) {
-        validateStateTransition(MemberState.ACTIVE);
-        this.previousState = this.state;
-        this.state = MemberState.ACTIVE;
-        this.status = MemberStatus.ONLINE;
-        return singletonList(new MemberCreatedEvent(memberId));
-    }
-
-    public List<MemberDomainEvent> deactivate(UUID memberId) {
-        validateStateTransition(MemberState.DELETED);
-        this.previousState = this.state;
-        this.state = MemberState.DELETED;
-        this.status = MemberStatus.OFFLINE;
-        return singletonList(new UndoCreateMemberEvent(memberId));
-    }
-
-    private void validateStateTransition(MemberState newState) {
-        if (!canTransitionTo(newState)) {
-            throw new UnsupportedStateTransitionException(this.state);
-        }
-    }
-
-    private boolean canTransitionTo(MemberState newState) {
-        return switch (this.state) {
-            case PENDING -> newState == MemberState.ACTIVE;
-            case ACTIVE -> newState == MemberState.DELETED;
-            case DELETED -> false;
-        };
     }
 
     public MemberStateInfo updateStatus(MemberStatus newStatus) {

@@ -1,8 +1,0 @@
-dependencies {
-    //User-domain
-    api project(':user-server:user-domain')
-}
-
-test {
-    enabled = false
-}
