@@ -1,8 +1,3 @@
-<!-- 
-제목 : feat(#issueNum) : 기능명
-ex) feat(4): pull request template 작성
--->
-
 ## 📌 관련 이슈
 
 - closed: #issueNum
@@ -11,6 +6,8 @@ ex) feat(4): pull request template 작성
 
 - 기능에서 어떤 부분이 구현되었는지 설명해주세요.
 <!-- 수정/추가한 내용을 적어주세요. -->
+
+## 🤔 작업 배경 및 고민 과정
 
 ## 이미지 첨부
 
