@@ -1,7 +1,0 @@
-dependencies {
-
-}
-
-test {
-    enabled = false
-}
